@@ -1,0 +1,180 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type OrderItem {
+  id: Int!
+  orderId: Int!
+  productId: Int!
+  quantity: Int!
+  unitPrice: Float!
+  commission: Float!
+  payout: Float!
+  product: Product!
+}
+
+type ProductImage {
+  id: Int!
+  url: String!
+  productId: Int!
+}
+
+type Order {
+  id: Int!
+  buyerId: Int!
+  total: Float!
+  status: OrderStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  buyer: User!
+  items: [OrderItem!]!
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type User {
+  id: Int!
+  name: String!
+  email: String!
+  avatar: String
+  role: Role!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  products: [Product!]
+  orders: [Order!]
+  reviews: [Review!]
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+type Review {
+  id: Int!
+  content: String!
+  rating: Int!
+  productId: Int!
+  authorId: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  product: Product!
+  author: User!
+}
+
+type Tag {
+  id: Int!
+  name: String!
+  products: [Product!]
+}
+
+type Product {
+  id: Int!
+  title: String!
+  slug: String
+  description: String!
+  price: Float!
+  stock: Int!
+  pubished: Boolean!
+  createAt: DateTime!
+  updateAt: DateTime!
+  seller: User!
+  categories: [Tag!]
+  images: [ProductImage!]
+  OrderItems: [OrderItem!]
+  Reviews: [Review!]
+}
+
+type Query {
+  products: [Product!]!
+  user(id: Int!): User!
+  productimage(id: Int!): ProductImage!
+  order(id: Int!): Order!
+  orderitem(id: Int!): OrderItem!
+  review(id: Int!): Review!
+}
+
+type Mutation {
+  createUser(createUserInput: CreateUserInput!): User!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  removeUser(id: Int!): User!
+  createProductimage(createProductimageInput: CreateProductimageInput!): ProductImage!
+  updateProductimage(updateProductimageInput: UpdateProductimageInput!): ProductImage!
+  removeProductimage(id: Int!): ProductImage!
+  createOrder(createOrderInput: CreateOrderInput!): Order!
+  updateOrder(updateOrderInput: UpdateOrderInput!): Order!
+  removeOrder(id: Int!): Order!
+  createOrderitem(createOrderitemInput: CreateOrderitemInput!): OrderItem!
+  updateOrderitem(updateOrderitemInput: UpdateOrderitemInput!): OrderItem!
+  removeOrderitem(id: Int!): OrderItem!
+  createReview(createReviewInput: CreateReviewInput!): Review!
+  updateReview(updateReviewInput: UpdateReviewInput!): Review!
+  removeReview(id: Int!): Review!
+}
+
+input CreateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateUserInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateProductimageInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateProductimageInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateOrderInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateOrderInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateOrderitemInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateOrderitemInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateReviewInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateReviewInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}

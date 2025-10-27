@@ -1,0 +1,135 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+///////////////////////
+// ENUMS
+///////////////////////
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+///////////////////////
+// USERS
+///////////////////////
+
+model User {
+  id        Int       @id @default(autoincrement())
+  name      String
+  email     String    @unique
+  password  String
+  avatar    String?
+  role      Role      @default(BUYER)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  // Relaciones
+  products  Product[]    // Productos que vende si es vendedor
+  orders    Order[]      // Órdenes que ha comprado
+  reviews   Review[]
+}
+
+///////////////////////
+// PRODUCTS
+///////////////////////
+
+model Product {
+  id          Int           @id @default(autoincrement())
+  title       String
+  slug        String?       @unique
+  description String
+  price       Float
+  stock       Int
+  published   Boolean       
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+
+  sellerId    Int
+  seller      User          @relation(fields: [sellerId], references: [id])
+
+  categories  Tag[]         @relation("ProductTags")
+  orderItems  OrderItem[]
+  reviews     Review[]
+  images      ProductImage[]
+}
+
+model ProductImage {
+  id        Int      @id @default(autoincrement())
+  url       String
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+}
+
+///////////////////////
+// TAGS / CATEGORIAS
+///////////////////////
+
+model Tag {
+  id       Int       @id @default(autoincrement())
+  name     String    @unique
+  products Product[] @relation("ProductTags")
+}
+
+///////////////////////
+// ORDERS
+///////////////////////
+
+model Order {
+  id        Int         @id @default(autoincrement())
+  buyerId   Int
+  buyer     User        @relation(fields: [buyerId], references: [id])
+  total     Float
+  status    OrderStatus @default(PENDING)
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  items     OrderItem[]
+}
+
+model OrderItem {
+  id         Int       @id @default(autoincrement())
+  orderId    Int
+  order      Order     @relation(fields: [orderId], references: [id])
+  productId  Int
+  product    Product   @relation(fields: [productId], references: [id])
+  quantity   Int
+  unitPrice  Float
+  commission Float     // porcentaje que se queda Tunealo
+  payout     Float     // monto que recibe el vendedor
+}
+
+///////////////////////
+// REVIEWS / COMENTARIOS
+///////////////////////
+
+model Review {
+  id        Int      @id @default(autoincrement())
+  content   String
+  rating    Int      // 1 a 5
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  authorId  Int
+  author    User     @relation(fields: [authorId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
