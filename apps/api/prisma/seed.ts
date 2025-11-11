@@ -1,7 +1,7 @@
 // prisma/seed.ts
 import { PrismaClient, Role, OrderStatus } from '@prisma/client';
 import { faker } from '@faker-js/faker';
-import * as bcrypt from 'bcrypt';
+import { hash } from 'argon2';
 
 const prisma = new PrismaClient();
 
@@ -33,9 +33,9 @@ async function main() {
 
   console.log(`✅ Created ${tags.length} tags`);
 
-  // Create Users
-  const hashedPassword = await bcrypt.hash('password123', 10);
-  
+  // Create Users with Argon2 (same as auth.service)
+  const hashedPassword = await hash('password123');
+
   // Admin user
   const admin = await prisma.user.create({
     data: {

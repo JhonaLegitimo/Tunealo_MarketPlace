@@ -2,40 +2,16 @@
 # THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
 # ------------------------------------------------------
 
-type OrderItem {
+type Review {
   id: Int!
-  orderId: Int!
+  content: String!
+  rating: Int!
   productId: Int!
-  quantity: Int!
-  unitPrice: Float!
-  commission: Float!
-  payout: Float!
-  product: Product!
-}
-
-type ProductImage {
-  id: Int!
-  url: String!
-  productId: Int!
-}
-
-type Order {
-  id: Int!
-  buyerId: Int!
-  total: Float!
-  status: OrderStatus!
+  authorId: Int!
   createdAt: DateTime!
   updatedAt: DateTime!
-  buyer: User!
-  items: [OrderItem!]!
-}
-
-enum OrderStatus {
-  PENDING
-  PAID
-  SHIPPED
-  COMPLETED
-  CANCELLED
+  product: Product!
+  author: User!
 }
 
 """
@@ -62,16 +38,41 @@ enum Role {
   ADMIN
 }
 
-type Review {
+type Order {
   id: Int!
-  content: String!
-  rating: Int!
-  productId: Int!
-  authorId: Int!
+  buyerId: Int!
+  total: Float!
+  status: OrderStatus!
   createdAt: DateTime!
   updatedAt: DateTime!
+  buyer: User!
+  items: [OrderItem!]!
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+type OrderItem {
+  id: Int!
+  orderId: Int!
+  productId: Int!
+  quantity: Int!
+  unitPrice: Float!
+  commission: Float!
+  payout: Float!
+  order: Order!
   product: Product!
-  author: User!
+}
+
+type ProductImage {
+  id: Int!
+  url: String!
+  product: Product!
 }
 
 type Tag {
@@ -92,14 +93,21 @@ type Product {
   updateAt: DateTime!
   seller: User!
   categories: [Tag!]
-  images: [ProductImage!]
+  images: [ProductImage!]!
   OrderItems: [OrderItem!]
   Reviews: [Review!]
 }
 
+type AuthResponse {
+  accessToken: String!
+  user: User!
+}
+
 type Query {
   products: [Product!]!
-  user(id: Int!): User!
+  me: User!
+  user(id: Int!): User
+  users: [User!]!
   productimage(id: Int!): ProductImage!
   order(id: Int!): Order!
   orderitem(id: Int!): OrderItem!
@@ -107,9 +115,8 @@ type Query {
 }
 
 type Mutation {
-  createUser(createUserInput: CreateUserInput!): User!
   updateUser(updateUserInput: UpdateUserInput!): User!
-  removeUser(id: Int!): User!
+  deleteUser(id: Int!): Boolean!
   createProductimage(createProductimageInput: CreateProductimageInput!): ProductImage!
   updateProductimage(updateProductimageInput: UpdateProductimageInput!): ProductImage!
   removeProductimage(id: Int!): ProductImage!
@@ -122,16 +129,16 @@ type Mutation {
   createReview(createReviewInput: CreateReviewInput!): Review!
   updateReview(updateReviewInput: UpdateReviewInput!): Review!
   removeReview(id: Int!): Review!
-}
-
-input CreateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  signIn(signInInput: SignInInput!): AuthResponse!
+  signUp(createUserInput: CreateUserInput!): AuthResponse!
 }
 
 input UpdateUserInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  name: String
+  email: String
+  password: String
+  avatar: String
+  role: Role = BUYER
   id: Int!
 }
 
@@ -177,4 +184,17 @@ input UpdateReviewInput {
   """Example field (placeholder)"""
   exampleField: Int
   id: Int!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+  password: String!
+  avatar: String
+  role: Role = BUYER
 }

@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { PrismaModule } from './prisma/prisma.module';
@@ -12,13 +13,28 @@ import { TagModule } from './tag/tag.module';
 import { OrderModule } from './order/order.module';
 import { OrderitemModule } from './orderitem/orderitem.module';
 import { ReviewModule } from './review/review.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
-  imports: [GraphQLModule.forRoot<ApolloDriverConfig>({
-    driver: ApolloDriver,
-    autoSchemaFile: join(process.cwd(), "src/graphql/schema.gql")
-  })
-    ,PrismaModule, ProductModule, UserModule, ProductimageModule, TagModule, OrderModule, OrderitemModule, ReviewModule],
+  imports: [
+    ConfigModule.forRoot({
+      isGlobal: true,
+      envFilePath: '.env',
+    }),
+    GraphQLModule.forRoot<ApolloDriverConfig>({
+      driver: ApolloDriver,
+      autoSchemaFile: join(process.cwd(), "src/graphql/schema.gql")
+    }),
+    PrismaModule,
+    ProductModule,
+    UserModule,
+    ProductimageModule,
+    TagModule,
+    OrderModule,
+    OrderitemModule,
+    ReviewModule,
+    AuthModule,
+  ],
   controllers: [AppController],
   providers: [AppService],
 })

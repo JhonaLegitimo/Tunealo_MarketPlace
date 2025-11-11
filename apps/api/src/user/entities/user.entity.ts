@@ -1,9 +1,12 @@
 // user/entities/user.entity.ts
-import { ObjectType, Field, Int } from '@nestjs/graphql';
-import { Role } from 'src/common/enum';
+import { ObjectType, Field, Int, registerEnumType } from '@nestjs/graphql';
+import { Role as PrismaRole } from '@prisma/client';
 import { Order } from 'src/order/entities/order.entity';
 import { Product } from 'src/product/entities/product.entity';
 import { Review } from 'src/review/entities/review.entity';
+
+// Register Prisma enum for GraphQL
+registerEnumType(PrismaRole, { name: 'Role' });
 
 @ObjectType()
 export class User {
@@ -19,8 +22,8 @@ export class User {
   @Field({ nullable: true })
   avatar?: string;
 
-  @Field(() => Role)
-  role: Role;
+  @Field(() => PrismaRole)
+  role: PrismaRole;
 
   @Field()
   createdAt: Date;
@@ -35,5 +38,5 @@ export class User {
   orders?:Order[];
 
   @Field(()=>[Review], {nullable:true})
-  reviews:Review[];
+  reviews?:Review[];
 }

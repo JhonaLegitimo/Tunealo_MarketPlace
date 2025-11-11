@@ -41,7 +41,7 @@ export class Product {
   @Field(() => [Tag], { nullable: true })
   categories?: Tag[];
 
-  @Field(() => [ProductImage], { nullable: true })
+  @Field(() => [ProductImage])
   images: ProductImage[];
 
   @Field(() => [OrderItem], { nullable: true })
