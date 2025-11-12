@@ -88,9 +88,9 @@ type Product {
   description: String!
   price: Float!
   stock: Int!
-  pubished: Boolean!
-  createAt: DateTime!
-  updateAt: DateTime!
+  published: Boolean!
+  createdAt: DateTime!
+  updatedAt: DateTime!
   seller: User!
   categories: [Tag!]
   images: [ProductImage!]!
@@ -98,31 +98,152 @@ type Product {
   Reviews: [Review!]
 }
 
+type PaginatedProducts {
+  products: [Product!]!
+  totalCount: Int!
+  hasMore: Boolean!
+  currentPage: Int!
+}
+
 type AuthResponse {
   accessToken: String!
   user: User!
 }
 
+type CartItem {
+  id: Int!
+  cartId: Int!
+  productId: Int!
+  product: Product!
+  quantity: Int!
+
+  """Subtotal for this item (price * quantity)"""
+  subtotal: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Cart {
+  id: Int!
+  userId: Int!
+  user: User
+  items: [CartItem!]!
+
+  """Total price of all items in cart"""
+  subtotal: Float!
+
+  """Total number of items in cart"""
+  totalItems: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Payment {
+  id: ID!
+  mercadopagoId: String!
+  orderId: Int!
+  amount: Float!
+  status: PaymentStatus!
+  preferenceId: String
+  initPoint: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""Payment status from MercadoPago"""
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 type Query {
-  products: [Product!]!
+  """Get all products with optional filters and pagination (public)"""
+  products(
+    searchTerm: String
+    priceMin: Float
+    priceMax: Float
+    categoryIds: [Int!]
+    sellerId: Int
+    published: Boolean
+    inStock: Boolean
+
+    """newest | oldest | priceAsc | priceDesc | bestRating"""
+    orderBy: String
+    skip: Int = 0
+    take: Int = 20
+  ): PaginatedProducts!
+
+  """Get a single product by ID (public)"""
+  product(id: Int!): Product!
+
+  """Get a single product by slug (public)"""
+  productBySlug(slug: String!): Product!
   me: User!
   user(id: Int!): User
   users: [User!]!
   productimage(id: Int!): ProductImage!
+
+  """Get all tags/categories (public)"""
+  tags: [Tag!]!
+
+  """Get a single tag/category by ID (public)"""
+  tag(id: Int!): Tag!
+
+  """Get all orders (ADMIN only)"""
+  orders: [Order!]!
+
+  """Get current user purchase orders"""
+  myOrders: [Order!]!
+
+  """Get orders containing products from current seller"""
+  sellerOrders: [Order!]!
+
+  """Get single order by ID"""
   order(id: Int!): Order!
   orderitem(id: Int!): OrderItem!
   review(id: Int!): Review!
+
+  """Get current user cart"""
+  myCart: Cart!
+
+  """Get payment information for an order"""
+  paymentByOrder(orderId: Int!): Payment!
 }
 
 type Mutation {
+  """Create a new product (SELLER only)"""
+  createProduct(createProductInput: CreateProductInput!): Product!
+
+  """Update a product (owner or ADMIN only)"""
+  updateProduct(updateProductInput: UpdateProductInput!): Product!
+
+  """Delete a product (owner or ADMIN only)"""
+  deleteProduct(id: Int!): Product!
   updateUser(updateUserInput: UpdateUserInput!): User!
   deleteUser(id: Int!): Boolean!
   createProductimage(createProductimageInput: CreateProductimageInput!): ProductImage!
   updateProductimage(updateProductimageInput: UpdateProductimageInput!): ProductImage!
   removeProductimage(id: Int!): ProductImage!
-  createOrder(createOrderInput: CreateOrderInput!): Order!
-  updateOrder(updateOrderInput: UpdateOrderInput!): Order!
-  removeOrder(id: Int!): Order!
+
+  """Create a new tag/category (ADMIN only)"""
+  createTag(createTagInput: CreateTagInput!): Tag!
+
+  """Update an existing tag/category (ADMIN only)"""
+  updateTag(updateTagInput: UpdateTagInput!): Tag!
+
+  """Delete a tag/category (ADMIN only)"""
+  removeTag(id: Int!): Tag!
+
+  """Create order from current user cart"""
+  createOrderFromCart: Order!
+
+  """Update order status (seller or admin only)"""
+  updateOrderStatus(updateOrderStatusInput: UpdateOrderStatusInput!): Order!
+
+  """Cancel order (buyer only, PENDING status only)"""
+  cancelOrder(orderId: Int!): Order!
   createOrderitem(createOrderitemInput: CreateOrderitemInput!): OrderItem!
   updateOrderitem(updateOrderitemInput: UpdateOrderitemInput!): OrderItem!
   removeOrderitem(id: Int!): OrderItem!
@@ -131,6 +252,68 @@ type Mutation {
   removeReview(id: Int!): Review!
   signIn(signInInput: SignInInput!): AuthResponse!
   signUp(createUserInput: CreateUserInput!): AuthResponse!
+
+  """Add product to cart or increase quantity if already exists"""
+  addToCart(addToCartInput: AddToCartInput!): Cart!
+
+  """Update quantity of a product in cart"""
+  updateCartItem(updateCartItemInput: UpdateCartItemInput!): Cart!
+
+  """Remove a product from cart"""
+  removeFromCart(productId: Int!): Cart!
+
+  """Clear entire cart"""
+  clearCart: Cart!
+
+  """Create payment preference for an order"""
+  createPayment(createPaymentInput: CreatePaymentInput!): Payment!
+}
+
+input CreateProductInput {
+  """Product title"""
+  title: String!
+
+  """Product description"""
+  description: String!
+
+  """Product price"""
+  price: Float!
+
+  """Stock quantity"""
+  stock: Int!
+
+  """Whether the product is published"""
+  published: Boolean! = false
+
+  """Array of category/tag IDs"""
+  categoryIds: [Int!]
+
+  """Array of image URLs"""
+  imageUrls: [String!]
+}
+
+input UpdateProductInput {
+  """Product title"""
+  title: String
+
+  """Product description"""
+  description: String
+
+  """Product price"""
+  price: Float
+
+  """Stock quantity"""
+  stock: Int
+
+  """Whether the product is published"""
+  published: Boolean = false
+
+  """Array of category/tag IDs"""
+  categoryIds: [Int!]
+
+  """Array of image URLs"""
+  imageUrls: [String!]
+  id: Int!
 }
 
 input UpdateUserInput {
@@ -153,15 +336,23 @@ input UpdateProductimageInput {
   id: Int!
 }
 
-input CreateOrderInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+input CreateTagInput {
+  """Tag name (e.g., Brakes, Engine Parts, Suspension)"""
+  name: String!
 }
 
-input UpdateOrderInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+input UpdateTagInput {
+  """Tag name (e.g., Brakes, Engine Parts, Suspension)"""
+  name: String
   id: Int!
+}
+
+input UpdateOrderStatusInput {
+  """Order ID"""
+  orderId: Int!
+
+  """New order status"""
+  status: OrderStatus!
 }
 
 input CreateOrderitemInput {
@@ -197,4 +388,25 @@ input CreateUserInput {
   password: String!
   avatar: String
   role: Role = BUYER
+}
+
+input AddToCartInput {
+  """Product ID to add to cart"""
+  productId: Int!
+
+  """Quantity to add"""
+  quantity: Int! = 1
+}
+
+input UpdateCartItemInput {
+  """Product ID in cart"""
+  productId: Int!
+
+  """New quantity"""
+  quantity: Int!
+}
+
+input CreatePaymentInput {
+  """Order ID to create payment for"""
+  orderId: Int!
 }

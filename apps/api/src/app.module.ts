@@ -14,6 +14,8 @@ import { OrderModule } from './order/order.module';
 import { OrderitemModule } from './orderitem/orderitem.module';
 import { ReviewModule } from './review/review.module';
 import { AuthModule } from './auth/auth.module';
+import { CartModule } from './cart/cart.module';
+import { PaymentModule } from './payment/payment.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { AuthModule } from './auth/auth.module';
     OrderitemModule,
     ReviewModule,
     AuthModule,
+    CartModule,
+    PaymentModule,
   ],
   controllers: [AppController],
   providers: [AppService],

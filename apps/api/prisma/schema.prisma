@@ -28,6 +28,13 @@ enum OrderStatus {
   CANCELLED
 }
 
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
 ///////////////////////
 // USERS
 ///////////////////////
@@ -46,6 +53,7 @@ model User {
   products  Product[]    // Productos que vende si es vendedor
   orders    Order[]      // Órdenes que ha comprado
   reviews   Review[]
+  cart      Cart?        // Carrito de compras del usuario
 }
 
 ///////////////////////
@@ -59,7 +67,7 @@ model Product {
   description String
   price       Float
   stock       Int
-  published   Boolean       
+  published   Boolean
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -70,6 +78,7 @@ model Product {
   orderItems  OrderItem[]
   reviews     Review[]
   images      ProductImage[]
+  cartItems   CartItem[]
 }
 
 model ProductImage {
@@ -103,6 +112,7 @@ model Order {
   updatedAt DateTime    @updatedAt
 
   items     OrderItem[]
+  payments  Payment[]
 }
 
 model OrderItem {
@@ -131,5 +141,48 @@ model Review {
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+///////////////////////
+// SHOPPING CART
+///////////////////////
+
+model Cart {
+  id        Int        @id @default(autoincrement())
+  userId    Int        @unique
+  user      User       @relation(fields: [userId], references: [id])
+  items     CartItem[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model CartItem {
+  id        Int      @id @default(autoincrement())
+  cartId    Int
+  cart      Cart     @relation(fields: [cartId], references: [id], onDelete: Cascade)
+  productId Int
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([cartId, productId]) // Un producto solo puede estar una vez en el carrito
+}
+
+///////////////////////
+// PAYMENTS
+///////////////////////
+
+model Payment {
+  id             Int           @id @default(autoincrement())
+  mercadopagoId  String?       // ID del pago en MercadoPago
+  orderId        Int
+  order          Order         @relation(fields: [orderId], references: [id])
+  amount         Float
+  status         PaymentStatus @default(PENDING)
+  preferenceId   String?       // ID de preferencia de MercadoPago
+  initPoint      String?       // URL de pago de MercadoPago
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
 }
 

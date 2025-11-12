@@ -27,13 +27,13 @@ export class Product {
   stock:number;
 
   @Field()
-  pubished:boolean;
+  published:boolean;
 
   @Field()
-  createAt: Date;
+  createdAt: Date;
 
   @Field()
-  updateAt: Date;
+  updatedAt: Date;
 
   @Field(() => User)
   seller: User;
