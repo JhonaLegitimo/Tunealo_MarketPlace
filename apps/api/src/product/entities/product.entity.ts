@@ -29,6 +29,9 @@ export class Product {
   @Field()
   published:boolean;
 
+  @Field(() => Float, { nullable: true, description: 'Promedio de calificaciones (1-5)' })
+  avgRating?: number;
+
   @Field()
   createdAt: Date;
 
