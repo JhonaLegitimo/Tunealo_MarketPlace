@@ -1,0 +1,441 @@
+# ------------------------------------------------------
+# THIS FILE WAS AUTOMATICALLY GENERATED (DO NOT MODIFY)
+# ------------------------------------------------------
+
+type Review {
+  id: Int!
+  content: String!
+  rating: Int!
+  productId: Int!
+  authorId: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  product: Product!
+  author: User!
+}
+
+"""
+A date-time string at UTC, such as 2019-12-03T09:54:33Z, compliant with the date-time format.
+"""
+scalar DateTime
+
+type User {
+  id: Int!
+  name: String!
+  email: String!
+  avatar: String
+  role: Role!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  products: [Product!]
+  orders: [Order!]
+  reviews: [Review!]
+}
+
+enum Role {
+  BUYER
+  SELLER
+  ADMIN
+}
+
+type Order {
+  id: Int!
+  buyerId: Int!
+  total: Float!
+  status: OrderStatus!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  buyer: User!
+  items: [OrderItem!]!
+}
+
+enum OrderStatus {
+  PENDING
+  PAID
+  SHIPPED
+  COMPLETED
+  CANCELLED
+}
+
+type OrderItem {
+  id: Int!
+  orderId: Int!
+  productId: Int!
+  quantity: Int!
+  unitPrice: Float!
+  commission: Float!
+  payout: Float!
+  order: Order!
+  product: Product!
+}
+
+type ProductImage {
+  id: Int!
+  url: String!
+  product: Product!
+}
+
+type Tag {
+  id: Int!
+  name: String!
+  products: [Product!]
+}
+
+type Product {
+  id: Int!
+  title: String!
+  slug: String
+  description: String!
+  price: Float!
+  stock: Int!
+  published: Boolean!
+
+  """Promedio de calificaciones (1-5)"""
+  avgRating: Float
+  createdAt: DateTime!
+  updatedAt: DateTime!
+  seller: User!
+  categories: [Tag!]
+  images: [ProductImage!]!
+  OrderItems: [OrderItem!]
+  Reviews: [Review!]
+}
+
+type PaginatedProducts {
+  products: [Product!]!
+  totalCount: Int!
+  hasMore: Boolean!
+  currentPage: Int!
+}
+
+type DeleteReviewResponse {
+  message: String!
+}
+
+type AuthResponse {
+  accessToken: String!
+  user: User!
+}
+
+type CartItem {
+  id: Int!
+  cartId: Int!
+  productId: Int!
+  product: Product!
+  quantity: Int!
+
+  """Subtotal for this item (price * quantity)"""
+  subtotal: Float!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Cart {
+  id: Int!
+  userId: Int!
+  user: User
+  items: [CartItem!]!
+
+  """Total price of all items in cart"""
+  subtotal: Float!
+
+  """Total number of items in cart"""
+  totalItems: Int!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+type Payment {
+  id: ID!
+  mercadopagoId: String!
+  orderId: Int!
+  amount: Float!
+  status: PaymentStatus!
+  preferenceId: String
+  initPoint: String
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
+"""Payment status from MercadoPago"""
+enum PaymentStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  CANCELLED
+}
+
+type Query {
+  """Get all products with optional filters and pagination (public)"""
+  products(
+    searchTerm: String
+    priceMin: Float
+    priceMax: Float
+    categoryIds: [Int!]
+    sellerId: Int
+    published: Boolean
+    inStock: Boolean
+
+    """newest | oldest | priceAsc | priceDesc | bestRating"""
+    orderBy: String
+    skip: Int = 0
+    take: Int = 20
+  ): PaginatedProducts!
+
+  """Get a single product by ID (public)"""
+  product(id: Int!): Product!
+
+  """Get a single product by slug (public)"""
+  productBySlug(slug: String!): Product!
+  me: User!
+  user(id: Int!): User
+  users: [User!]!
+  productimage(id: Int!): ProductImage!
+
+  """Get all tags/categories (public)"""
+  tags: [Tag!]!
+
+  """Get a single tag/category by ID (public)"""
+  tag(id: Int!): Tag!
+
+  """Get all orders (ADMIN only)"""
+  orders: [Order!]!
+
+  """Get current user purchase orders"""
+  myOrders: [Order!]!
+
+  """Get orders containing products from current seller"""
+  sellerOrders: [Order!]!
+
+  """Get single order by ID"""
+  order(id: Int!): Order!
+  orderitem(id: Int!): OrderItem!
+
+  """Listar todas las reseñas con filtros opcionales (público)"""
+  reviews(productId: Int, userId: Int): [Review!]!
+
+  """Obtener una reseña específica (público)"""
+  review(id: Int!): Review!
+
+  """Get current user cart"""
+  myCart: Cart!
+
+  """Get payment information for an order"""
+  paymentByOrder(orderId: Int!): Payment!
+}
+
+type Mutation {
+  """Create a new product (SELLER only)"""
+  createProduct(createProductInput: CreateProductInput!): Product!
+
+  """Update a product (owner or ADMIN only)"""
+  updateProduct(updateProductInput: UpdateProductInput!): Product!
+
+  """Delete a product (owner or ADMIN only)"""
+  deleteProduct(id: Int!): Product!
+  updateUser(updateUserInput: UpdateUserInput!): User!
+  deleteUser(id: Int!): Boolean!
+  createProductimage(createProductimageInput: CreateProductimageInput!): ProductImage!
+  updateProductimage(updateProductimageInput: UpdateProductimageInput!): ProductImage!
+  removeProductimage(id: Int!): ProductImage!
+
+  """Create a new tag/category (ADMIN only)"""
+  createTag(createTagInput: CreateTagInput!): Tag!
+
+  """Update an existing tag/category (ADMIN only)"""
+  updateTag(updateTagInput: UpdateTagInput!): Tag!
+
+  """Delete a tag/category (ADMIN only)"""
+  removeTag(id: Int!): Tag!
+
+  """Create order from current user cart"""
+  createOrderFromCart: Order!
+
+  """Update order status (seller or admin only)"""
+  updateOrderStatus(updateOrderStatusInput: UpdateOrderStatusInput!): Order!
+
+  """Cancel order (buyer only, PENDING status only)"""
+  cancelOrder(orderId: Int!): Order!
+  createOrderitem(createOrderitemInput: CreateOrderitemInput!): OrderItem!
+  updateOrderitem(updateOrderitemInput: UpdateOrderitemInput!): OrderItem!
+  removeOrderitem(id: Int!): OrderItem!
+
+  """Crear una nueva reseña (solo BUYER que haya comprado el producto)"""
+  createReview(createReviewInput: CreateReviewInput!): Review!
+
+  """Actualizar una reseña (solo el autor)"""
+  updateReview(updateReviewInput: UpdateReviewInput!): Review!
+
+  """Eliminar una reseña (autor o ADMIN)"""
+  removeReview(id: Int!): DeleteReviewResponse!
+  signIn(signInInput: SignInInput!): AuthResponse!
+  signUp(createUserInput: CreateUserInput!): AuthResponse!
+
+  """Add product to cart or increase quantity if already exists"""
+  addToCart(addToCartInput: AddToCartInput!): Cart!
+
+  """Update quantity of a product in cart"""
+  updateCartItem(updateCartItemInput: UpdateCartItemInput!): Cart!
+
+  """Remove a product from cart"""
+  removeFromCart(productId: Int!): Cart!
+
+  """Clear entire cart"""
+  clearCart: Cart!
+
+  """Create payment preference for an order"""
+  createPayment(createPaymentInput: CreatePaymentInput!): Payment!
+}
+
+input CreateProductInput {
+  """Product title"""
+  title: String!
+
+  """Product description"""
+  description: String!
+
+  """Product price"""
+  price: Float!
+
+  """Stock quantity"""
+  stock: Int!
+
+  """Whether the product is published"""
+  published: Boolean! = false
+
+  """Array of category/tag IDs"""
+  categoryIds: [Int!]
+
+  """Array of image URLs"""
+  imageUrls: [String!]
+}
+
+input UpdateProductInput {
+  """Product title"""
+  title: String
+
+  """Product description"""
+  description: String
+
+  """Product price"""
+  price: Float
+
+  """Stock quantity"""
+  stock: Int
+
+  """Whether the product is published"""
+  published: Boolean = false
+
+  """Array of category/tag IDs"""
+  categoryIds: [Int!]
+
+  """Array of image URLs"""
+  imageUrls: [String!]
+  id: Int!
+}
+
+input UpdateUserInput {
+  name: String
+  email: String
+  password: String
+  avatar: String
+  role: Role = BUYER
+  id: Int!
+}
+
+input CreateProductimageInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateProductimageInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateTagInput {
+  """Tag name (e.g., Brakes, Engine Parts, Suspension)"""
+  name: String!
+}
+
+input UpdateTagInput {
+  """Tag name (e.g., Brakes, Engine Parts, Suspension)"""
+  name: String
+  id: Int!
+}
+
+input UpdateOrderStatusInput {
+  """Order ID"""
+  orderId: Int!
+
+  """New order status"""
+  status: OrderStatus!
+}
+
+input CreateOrderitemInput {
+  """Example field (placeholder)"""
+  exampleField: Int!
+}
+
+input UpdateOrderitemInput {
+  """Example field (placeholder)"""
+  exampleField: Int
+  id: Int!
+}
+
+input CreateReviewInput {
+  """ID del producto a reseñar"""
+  productId: Int!
+
+  """Contenido de la reseña"""
+  content: String!
+
+  """Calificación del producto (1-5)"""
+  rating: Int!
+}
+
+input UpdateReviewInput {
+  """Contenido de la reseña"""
+  content: String
+
+  """Calificación del producto (1-5)"""
+  rating: Int
+
+  """ID de la reseña a actualizar"""
+  id: Int!
+}
+
+input SignInInput {
+  email: String!
+  password: String!
+}
+
+input CreateUserInput {
+  name: String!
+  email: String!
+  password: String!
+  avatar: String
+  role: Role = BUYER
+}
+
+input AddToCartInput {
+  """Product ID to add to cart"""
+  productId: Int!
+
+  """Quantity to add"""
+  quantity: Int! = 1
+}
+
+input UpdateCartItemInput {
+  """Product ID in cart"""
+  productId: Int!
+
+  """New quantity"""
+  quantity: Int!
+}
+
+input CreatePaymentInput {
+  """Order ID to create payment for"""
+  orderId: Int!
+}
