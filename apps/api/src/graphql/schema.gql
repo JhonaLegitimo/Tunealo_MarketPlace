@@ -89,6 +89,9 @@ type Product {
   price: Float!
   stock: Int!
   published: Boolean!
+
+  """Promedio de calificaciones (1-5)"""
+  avgRating: Float
   createdAt: DateTime!
   updatedAt: DateTime!
   seller: User!
@@ -103,6 +106,10 @@ type PaginatedProducts {
   totalCount: Int!
   hasMore: Boolean!
   currentPage: Int!
+}
+
+type DeleteReviewResponse {
+  message: String!
 }
 
 type AuthResponse {
@@ -203,6 +210,11 @@ type Query {
   """Get single order by ID"""
   order(id: Int!): Order!
   orderitem(id: Int!): OrderItem!
+
+  """Listar todas las reseñas con filtros opcionales (público)"""
+  reviews(productId: Int, userId: Int): [Review!]!
+
+  """Obtener una reseña específica (público)"""
   review(id: Int!): Review!
 
   """Get current user cart"""
@@ -247,9 +259,15 @@ type Mutation {
   createOrderitem(createOrderitemInput: CreateOrderitemInput!): OrderItem!
   updateOrderitem(updateOrderitemInput: UpdateOrderitemInput!): OrderItem!
   removeOrderitem(id: Int!): OrderItem!
+
+  """Crear una nueva reseña (solo BUYER que haya comprado el producto)"""
   createReview(createReviewInput: CreateReviewInput!): Review!
+
+  """Actualizar una reseña (solo el autor)"""
   updateReview(updateReviewInput: UpdateReviewInput!): Review!
-  removeReview(id: Int!): Review!
+
+  """Eliminar una reseña (autor o ADMIN)"""
+  removeReview(id: Int!): DeleteReviewResponse!
   signIn(signInInput: SignInInput!): AuthResponse!
   signUp(createUserInput: CreateUserInput!): AuthResponse!
 
@@ -367,13 +385,24 @@ input UpdateOrderitemInput {
 }
 
 input CreateReviewInput {
-  """Example field (placeholder)"""
-  exampleField: Int!
+  """ID del producto a reseñar"""
+  productId: Int!
+
+  """Contenido de la reseña"""
+  content: String!
+
+  """Calificación del producto (1-5)"""
+  rating: Int!
 }
 
 input UpdateReviewInput {
-  """Example field (placeholder)"""
-  exampleField: Int
+  """Contenido de la reseña"""
+  content: String
+
+  """Calificación del producto (1-5)"""
+  rating: Int
+
+  """ID de la reseña a actualizar"""
   id: Int!
 }
 

@@ -68,6 +68,7 @@ model Product {
   price       Float
   stock       Int
   published   Boolean
+  avgRating   Float?        // Promedio de calificaciones (1-5)
   createdAt   DateTime      @default(now())
   updatedAt   DateTime      @updatedAt
 
@@ -141,6 +142,8 @@ model Review {
   author    User     @relation(fields: [authorId], references: [id])
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@unique([authorId, productId]) // Un usuario solo puede hacer una reseña por producto
 }
 
 ///////////////////////

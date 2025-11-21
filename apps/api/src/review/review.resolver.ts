@@ -1,35 +1,86 @@
-import { Resolver, Query, Mutation, Args, Int } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, ObjectType, Field } from '@nestjs/graphql';
+import { UseGuards } from '@nestjs/common';
 import { ReviewService } from './review.service';
 import { Review } from './entities/review.entity';
 import { CreateReviewInput } from './dto/create-review.input';
 import { UpdateReviewInput } from './dto/update-review.input';
+import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
+import { CurrentUser } from '../auth/decorators/current-user.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { Public } from '../auth/decorators/public.decorator';
+import { Role } from '@prisma/client';
+
+// GraphQL Type for delete response
+@ObjectType()
+class DeleteReviewResponse {
+  @Field()
+  message: string;
+}
 
 @Resolver(() => Review)
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ReviewResolver {
   constructor(private readonly reviewService: ReviewService) {}
 
-  @Mutation(() => Review)
-  createReview(@Args('createReviewInput') createReviewInput: CreateReviewInput) {
-    return this.reviewService.create(createReviewInput);
+  // ==================== MUTATIONS ====================
+
+  @Mutation(() => Review, {
+    description: 'Crear una nueva reseña (solo BUYER que haya comprado el producto)',
+  })
+  @Roles(Role.BUYER, Role.ADMIN)
+  createReview(
+    @Args('createReviewInput') createReviewInput: CreateReviewInput,
+    @CurrentUser() user: any,
+  ) {
+    return this.reviewService.create(user.id, createReviewInput);
   }
 
-  @Query(() => [Review], { name: 'review' })
-  findAll() {
-    return this.reviewService.findAll();
+  @Mutation(() => Review, {
+    description: 'Actualizar una reseña (solo el autor)',
+  })
+  updateReview(
+    @Args('updateReviewInput') updateReviewInput: UpdateReviewInput,
+    @CurrentUser() user: any,
+  ) {
+    return this.reviewService.update(
+      user.id,
+      updateReviewInput.id,
+      updateReviewInput,
+    );
   }
 
-  @Query(() => Review, { name: 'review' })
+  @Mutation(() => DeleteReviewResponse, {
+    description: 'Eliminar una reseña (autor o ADMIN)',
+  })
+  removeReview(
+    @Args('id', { type: () => Int }) id: number,
+    @CurrentUser() user: any,
+  ) {
+    const isAdmin = user.role === Role.ADMIN;
+    return this.reviewService.remove(user.id, id, isAdmin);
+  }
+
+  // ==================== QUERIES ====================
+
+  @Query(() => [Review], {
+    name: 'reviews',
+    description: 'Listar todas las reseñas con filtros opcionales (público)',
+  })
+  @Public()
+  findAll(
+    @Args('productId', { type: () => Int, nullable: true }) productId?: number,
+    @Args('userId', { type: () => Int, nullable: true }) userId?: number,
+  ) {
+    return this.reviewService.findAll(productId, userId);
+  }
+
+  @Query(() => Review, {
+    name: 'review',
+    description: 'Obtener una reseña específica (público)',
+  })
+  @Public()
   findOne(@Args('id', { type: () => Int }) id: number) {
     return this.reviewService.findOne(id);
-  }
-
-  @Mutation(() => Review)
-  updateReview(@Args('updateReviewInput') updateReviewInput: UpdateReviewInput) {
-    return this.reviewService.update(updateReviewInput.id, updateReviewInput);
-  }
-
-  @Mutation(() => Review)
-  removeReview(@Args('id', { type: () => Int }) id: number) {
-    return this.reviewService.remove(id);
   }
 }
