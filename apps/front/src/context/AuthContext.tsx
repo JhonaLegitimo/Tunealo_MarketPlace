@@ -1,40 +1,47 @@
-"use client";
-import React, { createContext, useContext, useState, useEffect } from "react";
+// context/AuthContext.tsx
+
+"use client"; // Asegúrate de que este archivo se ejecute en el cliente.
+
+import React, { createContext, useContext, useState } from "react";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  role: string;
+}
 
 interface AuthContextType {
-  user: any;
+  user: User | null;
   token: string | null;
-  login: (token: string, userData: any) => void;
+  login: (token: string, user: User) => void;
   logout: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any>(null);
+export const useAuth = () => {
+  const context = useContext(AuthContext);
+  if (!context) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+};
+
+export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
 
-  useEffect(() => {
-    const storedToken = localStorage.getItem("token");
-    const storedUser = localStorage.getItem("user");
-    if (storedToken && storedUser) {
-      setToken(storedToken);
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const login = (accessToken: string, userData: any) => {
-    setToken(accessToken);
-    setUser(userData);
-    localStorage.setItem("token", accessToken);
-    localStorage.setItem("user", JSON.stringify(userData));
+  const login = (token: string, user: User) => {
+    setToken(token);
+    setUser(user);
+    // Aquí puedes guardar el token en localStorage o cookies si lo necesitas
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
+    // También puedes limpiar el localStorage o cookies aquí
   };
 
   return (
@@ -42,6 +49,4 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       {children}
     </AuthContext.Provider>
   );
-}
-
-export const useAuth = () => useContext(AuthContext);
+};
