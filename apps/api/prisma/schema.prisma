@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mysql"
   url      = env("DATABASE_URL")
 }
 
@@ -64,7 +64,7 @@ model Product {
   id          Int           @id @default(autoincrement())
   title       String
   slug        String?       @unique
-  description String
+  description String        @db.VarChar(1000)
   price       Float
   stock       Int
   published   Boolean
@@ -134,7 +134,7 @@ model OrderItem {
 
 model Review {
   id        Int      @id @default(autoincrement())
-  content   String
+  content   String   @db.VarChar(1500)
   rating    Int      // 1 a 5
   productId Int
   product   Product  @relation(fields: [productId], references: [id])
@@ -143,7 +143,6 @@ model Review {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  @@unique([authorId, productId]) // Un usuario solo puede hacer una reseña por producto
 }
 
 ///////////////////////
@@ -188,4 +187,3 @@ model Payment {
   createdAt      DateTime      @default(now())
   updatedAt      DateTime      @updatedAt
 }
-

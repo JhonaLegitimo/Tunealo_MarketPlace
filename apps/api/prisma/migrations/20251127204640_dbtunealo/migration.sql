@@ -18,7 +18,7 @@ CREATE TABLE `Product` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
     `title` VARCHAR(191) NOT NULL,
     `slug` VARCHAR(191) NULL,
-    `description` TEXT NOT NULL,
+    `description` VARCHAR(191) NOT NULL,
     `price` DOUBLE NOT NULL,
     `stock` INTEGER NOT NULL,
     `published` BOOLEAN NOT NULL,
