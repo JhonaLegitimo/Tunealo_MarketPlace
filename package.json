@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-      "dev": "turbo run dev",
-      "build": "turbo run build",
-      "lint": "turbo run lint"
-    },
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint"
+  },
   "packageManager": "npm@11.6.1",
-  "workspaces":[
+  "workspaces": [
     "apps/*"
   ],
   "keywords": [],
@@ -17,6 +17,6 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "turbo": "^2.5.8"
+    "turbo": "^2.6.1"
   }
 }

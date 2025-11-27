@@ -6,7 +6,7 @@ import { hash } from 'argon2';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting seed...');
+  console.log('🌱 Starting seed (Autopartes)...');
 
   // Clear existing data
   await prisma.review.deleteMany();
@@ -19,40 +19,41 @@ async function main() {
 
   console.log('✨ Database cleared');
 
-  // Create Tags/Categories
-  const musicCategories = [
-    'Beats', 'Vocals', 'Mixing', 'Mastering', 'Production',
-    'Sound Design', 'Loops', 'Samples', 'Instruments', 'Effects'
+  // 1. Crear Categorías de Autopartes
+  const autoCategories = [
+    'Motor', 'Frenos', 'Suspensión', 'Transmisión', 'Sistema Eléctrico',
+    'Interior', 'Carrocería', 'Ruedas y Neumáticos', 'Aceites y Fluidos', 'Filtros',
+    'Escape', 'Climatización'
   ];
 
   const tags = await Promise.all(
-    musicCategories.map(name =>
+    autoCategories.map(name =>
       prisma.tag.create({ data: { name } })
     )
   );
 
-  console.log(`✅ Created ${tags.length} tags`);
+  console.log(`✅ Created ${tags.length} tags (categories)`);
 
-  // Create Users with Argon2 (same as auth.service)
+  // 2. Crear Usuarios (Igual que antes pero con datos genéricos)
   const hashedPassword = await hash('password123');
 
   // Admin user
   const admin = await prisma.user.create({
     data: {
-      name: 'Admin User',
-      email: 'admin@tunealo.com',
+      name: 'Admin Autopartes',
+      email: 'admin@autopartes.com',
       password: hashedPassword,
       avatar: faker.image.avatar(),
       role: Role.ADMIN,
     },
   });
 
-  // Sellers
+  // Sellers (Vendedores de repuestos)
   const sellers = await Promise.all(
     Array.from({ length: 10 }).map(() =>
       prisma.user.create({
         data: {
-          name: faker.person.fullName(),
+          name: faker.company.name(), // Nombre de empresa queda mejor para vendedores de partes
           email: faker.internet.email(),
           password: hashedPassword,
           avatar: faker.image.avatar(),
@@ -62,7 +63,7 @@ async function main() {
     )
   );
 
-  // Buyers
+  // Buyers (Clientes con autos)
   const buyers = await Promise.all(
     Array.from({ length: 15 }).map(() =>
       prisma.user.create({
@@ -79,18 +80,24 @@ async function main() {
 
   console.log(`✅ Created ${1 + sellers.length + buyers.length} users`);
 
-  // Create Products
+  // Lista de partes comunes para generar títulos realistas
+  const carPartsList = [
+    'Pastillas de Freno Cerámicas', 'Disco de Freno Ventilado', 'Amortiguador Delantero',
+    'Kit de Embrague', 'Alternador 12V', 'Motor de Arranque', 'Bomba de Agua',
+    'Radiador de Aluminio', 'Filtro de Aceite Sintético', 'Batería de Alto Rendimiento',
+    'Juego de Bujías Iridium', 'Correa de Distribución', 'Sensor de Oxígeno',
+    'Faro Delantero LED', 'Espejo Retrovisor Eléctrico'
+  ];
+
+  // 3. Crear Productos (Autopartes)
   const products = await Promise.all(
     Array.from({ length: 50 }).map(async (_, index) => {
-      const title = faker.helpers.arrayElement([
-        `${faker.music.genre()} Beat Pack`,
-        `Professional ${faker.music.genre()} Mix`,
-        `${faker.word.adjective()} Vocal Sample`,
-        `${faker.commerce.productAdjective()} Sound Design Kit`,
-        `Premium ${faker.music.genre()} Loops`,
-        `Mastering Service - ${faker.word.adjective()}`,
-        `Custom ${faker.music.genre()} Production`,
-      ]);
+      // Generar un título tipo: "Bomba de Agua para Toyota Corolla 2015"
+      const partName = faker.helpers.arrayElement(carPartsList);
+      const vehicle = `${faker.vehicle.manufacturer()} ${faker.vehicle.model()}`;
+      const year = faker.date.past({ years: 15 }).getFullYear();
+      
+      const title = `${partName} para ${vehicle} ${year}`;
 
       const slug = `${faker.helpers.slugify(title).toLowerCase()}-${index}-${faker.string.alphanumeric(4)}`;
 
@@ -98,24 +105,25 @@ async function main() {
         data: {
           title,
           slug,
-          description: faker.lorem.paragraphs(2),
-          price: parseFloat(faker.commerce.price({ min: 9.99, max: 299.99 })),
-          stock: faker.number.int({ min: 0, max: 100 }),
-          published: faker.datatype.boolean(0.9), // 90% published
+          description: `Repuesto de alta calidad para ${vehicle}. ${faker.lorem.paragraphs(2)} Garantía de fábrica incluida.`,
+          price: parseFloat(faker.commerce.price({ min: 15.00, max: 800.00 })), // Precios más realistas para partes
+          stock: faker.number.int({ min: 0, max: 50 }),
+          published: faker.datatype.boolean(0.9),
           sellerId: faker.helpers.arrayElement(sellers).id,
           categories: {
-            connect: faker.helpers.arrayElements(tags, { min: 1, max: 3 }).map(tag => ({ id: tag.id }))
+            connect: faker.helpers.arrayElements(tags, { min: 1, max: 2 }).map(tag => ({ id: tag.id }))
           },
         },
       });
 
-      // Add 2-5 images per product
-      const imageCount = faker.number.int({ min: 2, max: 5 });
+      // Imágenes de autopartes (usando category transport o technics)
+      const imageCount = faker.number.int({ min: 2, max: 4 });
       await Promise.all(
         Array.from({ length: imageCount }).map(() =>
           prisma.productImage.create({
             data: {
-              url: faker.image.url(),
+              // Usamos loremflickr directamente para asegurar imágenes de autos/piezas
+              url: `https://loremflickr.com/640/480/transport,car,mechanic?lock=${faker.string.numeric(5)}`,
               productId: product.id,
             },
           })
@@ -126,17 +134,17 @@ async function main() {
     })
   );
 
-  console.log(`✅ Created ${products.length} products with images`);
+  console.log(`✅ Created ${products.length} auto parts with images`);
 
-  // Create Orders
+  // 4. Crear Órdenes
   const orders = await Promise.all(
     Array.from({ length: 30 }).map(async () => {
       const buyer = faker.helpers.arrayElement(buyers);
       const orderProducts = faker.helpers.arrayElements(products, { min: 1, max: 4 });
       
       const items = orderProducts.map(product => {
-        const quantity = faker.number.int({ min: 1, max: 3 });
-        const commission = 0.15; // 15% commission
+        const quantity = faker.number.int({ min: 1, max: 2 }); // Generalmente se compran 1 o 2 piezas
+        const commission = 0.10; // 10% comisión por venta de partes
         const subtotal = product.price * quantity;
         const commissionAmount = subtotal * commission;
         
@@ -172,7 +180,7 @@ async function main() {
 
   console.log(`✅ Created ${orders.length} orders`);
 
-  // Create Reviews
+  // 5. Crear Reseñas (Reviews)
   const completedOrders = orders.filter(o => o.status === OrderStatus.COMPLETED);
   
   const reviews = await Promise.all(
@@ -182,7 +190,6 @@ async function main() {
         include: { items: true },
       });
 
-      // Some buyers review some products from their completed orders
       const itemsToReview = faker.helpers.arrayElements(
         orderWithItems!.items,
         { min: 1, max: orderWithItems!.items.length }
@@ -192,8 +199,14 @@ async function main() {
         itemsToReview.map(item =>
           prisma.review.create({
             data: {
-              content: faker.lorem.paragraph(),
-              rating: faker.number.int({ min: 3, max: 5 }), // Mostly positive reviews
+              content: faker.helpers.arrayElement([
+                "Excelente repuesto, quedó perfecto en mi auto.",
+                "Buena calidad, aunque el envío tardó un poco.",
+                "Funciona como el original, muy recomendado.",
+                "La pieza llegó bien embalada y en perfectas condiciones.",
+                "Instalación sencilla, todo correcto."
+              ]) + " " + faker.lorem.sentence(),
+              rating: faker.number.int({ min: 3, max: 5 }),
               productId: item.productId,
               authorId: order.buyerId,
             },
@@ -213,7 +226,7 @@ async function main() {
   console.log(`   Orders: ${orders.length}`);
   console.log(`   Reviews: ${reviews.flat().length}`);
   console.log('\n🔑 Test credentials:');
-  console.log('   Email: admin@tunealo.com');
+  console.log('   Email: admin@autopartes.com');
   console.log('   Password: password123');
 }
 
