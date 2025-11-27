@@ -39,9 +39,10 @@ export default function LoginPage() {
       });
 
       if (data?.signIn?.accessToken) {
-        login(data.signIn.accessToken, data.signIn.user);
-        router.push("/home"); // Redirigir a la página principal después del login
-      }
+  login(data.signIn.accessToken, data.signIn.user);
+  alert(`Bienvenido ${data.signIn.user.name}`);
+  router.replace("/home"); // o donde quieras redirigir
+  }
     } catch (error) {
       alert("Credenciales incorrectas");
       console.error(error);
