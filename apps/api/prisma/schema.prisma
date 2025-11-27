@@ -6,7 +6,7 @@ generator client {
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "sqlite"
   url      = env("DATABASE_URL")
 }
 
@@ -64,7 +64,7 @@ model Product {
   id          Int           @id @default(autoincrement())
   title       String
   slug        String?       @unique
-  description String        @db.Text
+  description String
   price       Float
   stock       Int
   published   Boolean
