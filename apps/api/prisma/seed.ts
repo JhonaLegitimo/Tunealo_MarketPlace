@@ -98,10 +98,10 @@ async function main() {
         data: {
           title,
           slug,
-          description: faker.lorem.paragraphs(2),
+          description: faker.lorem.paragraphs(2).slice(0,1000),
           price: parseFloat(faker.commerce.price({ min: 9.99, max: 299.99 })),
           stock: faker.number.int({ min: 0, max: 100 }),
-          published: faker.datatype.boolean(0.9), // 90% published
+          published: Math.random() < 0.9, // 90% published
           sellerId: faker.helpers.arrayElement(sellers).id,
           categories: {
             connect: faker.helpers.arrayElements(tags, { min: 1, max: 3 }).map(tag => ({ id: tag.id }))
