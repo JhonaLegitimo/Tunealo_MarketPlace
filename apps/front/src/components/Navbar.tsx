@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useAuth } from "@/context/AuthContext";
-import CartDrawer from "@/components/CartDrawer"; // usa @ si tu alias está configurado, si no, ../components
+import CartDrawer from "./CartDrawer"; // Asegúrate de usar el componente correcto
 
 export default function Navbar() {
   const { user, logout, token } = useAuth();
@@ -10,15 +10,17 @@ export default function Navbar() {
   return (
     <nav className="bg-blue-600 text-white px-6 py-4 flex justify-between items-center shadow-md">
       <div className="flex items-center gap-6">
+        {/* Logo y enlace a la página de inicio */}
         <Link href="/home" className="font-bold text-lg hover:underline">
           🏠 Tunealo Market
         </Link>
 
+        {/* Enlace a productos */}
         <Link href="/products" className="hover:underline">
           Productos
         </Link>
 
-        {/* 👉 Aquí va el componente del carrito */}
+        {/* Componente del carrito */}
         <CartDrawer />
       </div>
 

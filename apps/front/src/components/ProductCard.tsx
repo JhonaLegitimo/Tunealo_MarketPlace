@@ -2,7 +2,7 @@
 
 import { gql } from "@apollo/client/core";
 import { useMutation } from "@apollo/client/react";
-import { ADD_TO_CART } from "@/graphql/mutations/addToCart";
+import { ADD_TO_CART } from "@/graphql/mutations/cartMutations";  // Asegúrate de tener este archivo con la mutación
 import { useAuth } from "@/context/AuthContext";
 
 export default function ProductCard({ product }: { product: any }) {
@@ -11,10 +11,13 @@ export default function ProductCard({ product }: { product: any }) {
 
   const handleAddToCart = async () => {
     try {
+      // Asegúrate de enviar el objeto con el formato adecuado
       await addToCart({
         variables: {
-          productId: product.id,
-          quantity: 1,
+          addToCartInput: {  // Aquí estamos pasando el addToCartInput
+            productId: product.id,  // Envia el ID del producto
+            quantity: 1,             // Envia la cantidad del producto, en este caso 1
+          },
         },
         context: {
           headers: {
@@ -22,6 +25,7 @@ export default function ProductCard({ product }: { product: any }) {
           },
         },
       });
+
       alert(`✅ ${product.title} agregado al carrito`);
     } catch (err) {
       console.error(err);
@@ -48,3 +52,5 @@ export default function ProductCard({ product }: { product: any }) {
     </div>
   );
 }
+
+
