@@ -1,11 +1,26 @@
 "use client";
 
-import { gql } from "@apollo/client/core";
 import { useMutation } from "@apollo/client/react";
-import { ADD_TO_CART } from "@/graphql/mutations/cartMutations";  // Asegúrate de tener este archivo con la mutación
+import { ADD_TO_CART } from "@/graphql/mutations/cartMutations";
 import { useAuth } from "@/context/AuthContext";
+import Image from "next/image";
 
-export default function ProductCard({ product }: { product: any }) {
+interface ProductImage {
+  url: string;
+}
+
+interface Product {
+  id: number;
+  title: string;
+  price: number;
+  images?: ProductImage[];
+}
+
+interface ProductCardProps {
+  product: Product;
+}
+
+export default function ProductCard({ product }: ProductCardProps) {
   const { token } = useAuth();
   const [addToCart, { loading }] = useMutation(ADD_TO_CART);
 
@@ -35,11 +50,14 @@ export default function ProductCard({ product }: { product: any }) {
 
   return (
     <div className="border rounded p-4 shadow-sm flex flex-col items-center text-center bg-white hover:shadow-md transition">
-      <img
-        src={product.images?.[0]?.url || "/placeholder.png"}
-        alt={product.title}
-        className="w-40 h-40 object-cover mb-4 rounded"
-      />
+      <div className="relative w-40 h-40 mb-4">
+        <Image
+          src={product.images?.[0]?.url || "/placeholder.png"}
+          alt={product.title}
+          fill
+          className="object-cover rounded"
+        />
+      </div>
       <h3 className="font-semibold text-lg">{product.title}</h3>
       <p className="text-gray-600 mb-2">${product.price.toLocaleString()}</p>
       <button

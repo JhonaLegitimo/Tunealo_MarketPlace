@@ -19,8 +19,25 @@ const GET_PRODUCTS = gql`
   }
 `;
 
+interface ProductImage {
+  url: string;
+}
+
+interface Product {
+  id: number;
+  title: string;
+  price: number;
+  images?: ProductImage[];
+}
+
+interface ProductsData {
+  products: {
+    products: Product[];
+  };
+}
+
 export default function HomePage() {
-  const { data, loading, error } = useQuery(GET_PRODUCTS);
+  const { data, loading, error } = useQuery<ProductsData>(GET_PRODUCTS);
 
   if (loading) return <p className="p-6 text-center">Cargando productos...</p>;
   if (error)
@@ -40,7 +57,7 @@ export default function HomePage() {
         <p>No hay productos disponibles aún.</p>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {products.map((p: any) => (
+          {products.map((p: any) => ( // eslint-disable-line @typescript-eslint/no-explicit-any
             <ProductCard key={p.id} product={p} />
           ))}
         </div>

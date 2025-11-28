@@ -1,32 +1,35 @@
-import "./globals.css";
-import { ApolloWrapper } from "./providers";
-import { AuthProvider } from "../context/AuthContext";
-import Navbar from "../components/Navbar"; // Importa el Navbar
-import CartDrawer from "../components/CartDrawer";  // Asegúrate de importar el CartDrawer
+import type { Metadata } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
+import './globals.css'
+import { Providers } from "@/components/providers";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: 'Tunealo MarketPlace',
+  description: 'Marketplace de Autopartes',
+}
 
 export default function RootLayout({
   children,
-}: {
-  children: React.ReactNode;
-}) {
+}: Readonly<{
+  children: React.ReactNode
+}>) {
   return (
-    <html lang="es">
-      <body className="bg-gray-50 min-h-screen flex flex-col">
-        <ApolloWrapper>
-          <AuthProvider>
-            {/* Aquí va la Barra de Navegación */}
-            <Navbar />
-            
-            {/* Aquí va el Carrito */}
-            <CartDrawer />
-
-            {/* El contenido principal */}
-            <main className="flex-1 p-6">
-              {children}
-            </main>
-          </AuthProvider>
-        </ApolloWrapper>
+    <html lang="en" suppressHydrationWarning>
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased`}>
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
-  );
+  )
 }

@@ -3,15 +3,27 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useQuery } from "@apollo/client/react";
-import { GET_CART } from "@/graphql/cart"; // Asegúrate de que el query esté correcto
+import { GET_CART } from "@/graphql/cart";
+
+interface CartProduct {
+  id: number;
+  title: string;
+  price: number;
+}
+
+interface CartItem {
+  id: string;
+  product: CartProduct;
+  quantity: number;
+}
 
 export default function CartDrawer() {
   const [isOpen, setIsOpen] = useState(false);
-  const { data, loading, refetch } = useQuery(GET_CART); // Añadir refetch
+  const { data, loading } = useQuery(GET_CART);
 
-  const cartItems = data?.cart?.items || [];
+  const cartItems: CartItem[] = data?.cart?.items || [];
   const total = cartItems.reduce(
-    (sum: number, item: any) => sum + item.product.price * item.quantity,
+    (sum, item) => sum + item.product.price * item.quantity,
     0
   );
 
@@ -74,7 +86,7 @@ export default function CartDrawer() {
                     Tu carrito está vacío 🛒
                   </p>
                 ) : (
-                  cartItems.map((item: any) => (
+                  cartItems.map((item) => (
                     <div
                       key={item.id}
                       className="flex justify-between border-b py-2 text-sm"

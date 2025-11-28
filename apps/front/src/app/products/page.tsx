@@ -1,8 +1,22 @@
 "use client";
 
 import { useMutation } from "@apollo/client/react";
-import {  GET_CART } from "@/graphql/cart";
-import {ADD_TO_CART} from  "@/graphql/mutations/cartMutations";
+import { GET_CART } from "@/graphql/cart";
+import { ADD_TO_CART } from "@/graphql/mutations/cartMutations";
+
+interface CartItem {
+  product: { id: number };
+  quantity: number;
+}
+
+interface Cart {
+  id: number;
+  items: CartItem[];
+}
+
+interface ExistingCartData {
+  cart: Cart;
+}
 
 export default function AddToCartButton({ productId }: { productId: number }) {
   const [addToCart] = useMutation(ADD_TO_CART, {
@@ -11,7 +25,7 @@ export default function AddToCartButton({ productId }: { productId: number }) {
       if (!newItem) return;
 
       // Leer el carrito actual de la caché
-      const existingCart: any = cache.readQuery({ query: GET_CART });
+      const existingCart = cache.readQuery<ExistingCartData>({ query: GET_CART });
 
       // Si el carrito no existe aún, lo inicializamos
       if (!existingCart?.cart) {
@@ -26,12 +40,12 @@ export default function AddToCartButton({ productId }: { productId: number }) {
 
       // Si el producto ya existe, actualiza la cantidad
       const existingItem = existingCart.cart.items.find(
-        (i: any) => i.product.id === newItem.product.id
+        (i) => i.product.id === newItem.product.id
       );
 
       let updatedItems;
       if (existingItem) {
-        updatedItems = existingCart.cart.items.map((i: any) =>
+        updatedItems = existingCart.cart.items.map((i) =>
           i.product.id === newItem.product.id
             ? { ...i, quantity: i.quantity + newItem.quantity }
             : i
