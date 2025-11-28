@@ -6,6 +6,7 @@ import { gql } from "@apollo/client";
 import { useAuth } from "@/context/AuthContext";
 import { useMutation }from "@apollo/client/react";
 // Definir la mutación de GraphQL para login
+
 const SIGN_IN = gql`
   mutation SignIn($email: String!, $password: String!) {
     signIn(signInInput: { email: $email, password: $password }) {
