@@ -36,7 +36,7 @@ function Calendar({
       )}
       captionLayout={captionLayout}
       formatters={{
-        formatMonthDropdown: (date) =>
+        formatMonthDropdown: (date: Date) =>
           date.toLocaleString('default', { month: 'short' }),
         ...formatters,
       }}
@@ -125,7 +125,7 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Root: ({ className, rootRef, ...props }) => {
+        Root: ({ className, rootRef, ...props }: { className?: string; rootRef?: React.Ref<HTMLDivElement> } & React.HTMLAttributes<HTMLDivElement>) => {
           return (
             <div
               data-slot="calendar"
@@ -135,7 +135,7 @@ function Calendar({
             />
           )
         },
-        Chevron: ({ className, orientation, ...props }) => {
+        Chevron: ({ className, orientation, ...props }: React.ComponentProps<typeof ChevronDownIcon> & { orientation?: 'left' | 'right' | 'up' | 'down' }) => {
           if (orientation === 'left') {
             return (
               <ChevronLeftIcon className={cn('size-4', className)} {...props} />
@@ -156,7 +156,7 @@ function Calendar({
           )
         },
         DayButton: CalendarDayButton,
-        WeekNumber: ({ children, ...props }) => {
+        WeekNumber: ({ children, ...props }: { children?: React.ReactNode } & React.HTMLAttributes<HTMLTableCellElement>) => {
           return (
             <td {...props}>
               <div className="flex size-(--cell-size) items-center justify-center text-center">

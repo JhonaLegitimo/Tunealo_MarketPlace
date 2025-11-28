@@ -19,6 +19,14 @@ const nextConfig: NextConfig = {
         protocol: "https",
         hostname: "cloudflare-ipfs.com",
       },
+      {
+        protocol: "https",
+        hostname: "media.istockphoto.com",
+      },
+      {
+        protocol: "https",
+        hostname: "via.placeholder.com",
+      },
     ],
   },
 };

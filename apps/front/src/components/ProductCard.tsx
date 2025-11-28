@@ -1,8 +1,6 @@
 "use client";
 
-import { useMutation } from "@apollo/client/react";
-import { ADD_TO_CART } from "@/graphql/mutations/cartMutations";
-import { useAuth } from "@/context/AuthContext";
+import { useCart } from "@/context/CartContext";
 import Image from "next/image";
 
 interface ProductImage {
@@ -21,30 +19,15 @@ interface ProductCardProps {
 }
 
 export default function ProductCard({ product }: ProductCardProps) {
-  const { token } = useAuth();
-  const [addToCart, { loading }] = useMutation(ADD_TO_CART);
+  const { addToCart, loading } = useCart();
 
   const handleAddToCart = async () => {
     try {
-      // Asegúrate de enviar el objeto con el formato adecuado
-      await addToCart({
-        variables: {
-          addToCartInput: {  // Aquí estamos pasando el addToCartInput
-            productId: product.id,  // Envia el ID del producto
-            quantity: 1,             // Envia la cantidad del producto, en este caso 1
-          },
-        },
-        context: {
-          headers: {
-            Authorization: token ? `Bearer ${token}` : "",
-          },
-        },
-      });
-
+      await addToCart(product, 1);
       alert(`✅ ${product.title} agregado al carrito`);
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      alert("Error al agregar el producto al carrito");
+      alert(`Error al agregar el producto al carrito: ${err.message}`);
     }
   };
 
@@ -52,7 +35,7 @@ export default function ProductCard({ product }: ProductCardProps) {
     <div className="border rounded p-4 shadow-sm flex flex-col items-center text-center bg-white hover:shadow-md transition">
       <div className="relative w-40 h-40 mb-4">
         <Image
-          src={product.images?.[0]?.url || "/placeholder.png"}
+          src={product.images?.[0]?.url || "/placeholder.svg"}
           alt={product.title}
           fill
           className="object-cover rounded"
@@ -70,5 +53,3 @@ export default function ProductCard({ product }: ProductCardProps) {
     </div>
   );
 }
-
-

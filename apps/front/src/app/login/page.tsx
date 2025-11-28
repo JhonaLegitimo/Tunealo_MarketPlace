@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { gql } from "@apollo/client";
 import { useAuth } from "@/context/AuthContext";
 import { useMutation } from "@apollo/client/react";
 import Image from "next/image";
@@ -10,20 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
-
-const SIGN_IN = gql`
-  mutation SignIn($email: String!, $password: String!) {
-    signIn(signInInput: { email: $email, password: $password }) {
-      accessToken
-      user {
-        id
-        name
-        email
-        role
-      }
-    }
-  }
-`;
+import { SIGN_IN } from "@/graphql/mutations/auth";
 
 interface User {
   id: number;
@@ -140,7 +126,10 @@ export default function LoginPage() {
 
           <div className="mt-6 text-center text-sm text-gray-400">
             ¿No tienes una cuenta?{" "}
-            <button className="text-primary hover:text-red-400 font-semibold hover:underline">
+            <button
+              onClick={() => router.push('/register')}
+              className="text-primary hover:text-red-400 font-semibold hover:underline"
+            >
               Regístrate aquí
             </button>
           </div>

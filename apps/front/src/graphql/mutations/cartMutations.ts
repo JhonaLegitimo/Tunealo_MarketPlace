@@ -16,3 +16,29 @@ export const ADD_TO_CART = gql`
     }
   }
 `;
+export const UPDATE_CART_ITEM = gql`
+  mutation updateCartItem($updateCartItemInput: UpdateCartItemInput!) {
+    updateCartItem(updateCartItemInput: $updateCartItemInput) {
+      id
+      items {
+        id
+        product {
+          id
+          title
+          price
+        }
+        quantity
+      }
+    }
+  }
+`;
+export const CLEAR_CART = gql`
+  mutation clearCart {
+    clearCart {
+      id
+      items {
+        id
+      }
+    }
+  }
+`;

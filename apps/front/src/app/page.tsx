@@ -1,14 +1,20 @@
 "use client"
 
-import { Search, Bell, ShoppingCart, X, Heart, Share2 } from "lucide-react"
+import { Search, Bell, ShoppingCart, X, Heart, Share2, Star } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { useQuery } from "@apollo/client/react"
 import { GET_PRODUCTS } from "@/graphql/products"
 import Link from "next/link"
+import { useAuth } from "@/context/AuthContext"
+import CartDrawer from "@/components/CartDrawer"
 
 interface ProductImage {
   url: string;
+}
+
+interface Seller {
+  name: string;
 }
 
 interface Product {
@@ -16,7 +22,9 @@ interface Product {
   title: string;
   description: string;
   price: number;
+  avgRating?: number;
   images: ProductImage[];
+  seller: Seller;
 }
 
 interface ProductsData {
@@ -27,8 +35,12 @@ interface ProductsData {
 
 export default function Home() {
   const { data, loading, error } = useQuery<ProductsData>(GET_PRODUCTS);
+  const { user, token, logout } = useAuth();
 
   const products = data?.products?.products || [];
+
+  // Helper to generate random sales count for demo
+  const getSalesCount = (id: number) => Math.floor((id * 1234) % 500) + 5;
 
   return (
     <div className="min-h-screen bg-background">
@@ -65,14 +77,35 @@ export default function Home() {
             <button className="text-gray-600 hover:text-primary transition-colors hover:scale-110 duration-200">
               <Bell size={20} />
             </button>
-            <button className="text-gray-600 hover:text-primary transition-colors hover:scale-110 duration-200">
-              <ShoppingCart size={20} />
-            </button>
-            <Link href="/login">
-              <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 transition-all hover:shadow-lg">
-                Ingresar
-              </Button>
-            </Link>
+            <CartDrawer />
+            {token ? (
+              <div className="flex items-center gap-4">
+                <span className="font-medium text-sm hidden sm:block">
+                  Hola, {user?.name || "Usuario"}
+                </span>
+                <Link href="/profile">
+                  <Button
+                    variant="ghost"
+                    className="rounded-full px-4 hover:bg-gray-100 font-medium"
+                  >
+                    Perfil
+                  </Button>
+                </Link>
+                <Button
+                  onClick={logout}
+                  variant="outline"
+                  className="rounded-full px-6 hover:bg-red-50 text-red-600 border-red-200"
+                >
+                  Salir
+                </Button>
+              </div>
+            ) : (
+              <Link href="/login">
+                <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 transition-all hover:shadow-lg">
+                  Ingresar
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
 
@@ -147,47 +180,60 @@ export default function Home() {
                 key={product.id}
                 className="break-inside-avoid"
               >
-                <div className="bg-white rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group">
-                  {/* Image Container */}
-                  <div className="relative overflow-hidden aspect-auto bg-gray-200 h-64">
-                    <Image
-                      src={product.images?.[0]?.url || "/placeholder.svg"}
-                      alt={product.title}
-                      fill
-                      className="object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
+                <Link href={`/products/${product.id}`}>
+                  <div className="bg-white rounded-2xl overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 cursor-pointer group border border-gray-100">
+                    {/* Image Container */}
+                    <div className="relative overflow-hidden aspect-auto bg-gray-200 h-64">
+                      <Image
+                        src={product.images?.[0]?.url || "/placeholder.svg"}
+                        alt={product.title}
+                        fill
+                        className="object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
 
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-                    {/* Free Shipping Badge */}
-                    <div className="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg transform transition-transform group-hover:scale-110">
-                      ENVÍO GRATIS
+                      {/* Free Shipping Badge */}
+                      <div className="absolute top-3 left-3 bg-green-500 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg transform transition-transform group-hover:scale-110">
+                        ENVÍO GRATIS
+                      </div>
+
+                      {/* Action Buttons - Show on Hover */}
+                      <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                        <button className="bg-white/90 hover:bg-white rounded-full p-2 backdrop-blur transition-all shadow-lg hover:scale-110">
+                          <Heart size={18} className="text-red-500" />
+                        </button>
+                        <button className="bg-white/90 hover:bg-white rounded-full p-2 backdrop-blur transition-all shadow-lg hover:scale-110">
+                          <Share2 size={18} className="text-blue-500" />
+                        </button>
+                      </div>
                     </div>
 
-                    {/* Action Buttons - Show on Hover */}
-                    <div className="absolute bottom-3 right-3 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
-                      <button className="bg-white/90 hover:bg-white rounded-full p-2 backdrop-blur transition-all shadow-lg hover:scale-110">
-                        <Heart size={18} className="text-red-500" />
-                      </button>
-                      <button className="bg-white/90 hover:bg-white rounded-full p-2 backdrop-blur transition-all shadow-lg hover:scale-110">
-                        <Share2 size={18} className="text-blue-500" />
+                    {/* Product Info */}
+                    <div className="p-5">
+                      <div className="flex justify-between items-start mb-2">
+                        <div className="text-xs text-gray-500 font-medium bg-gray-100 px-2 py-1 rounded-full">
+                          {product.seller?.name || "Vendedor Verificado"}
+                        </div>
+                        <div className="flex items-center gap-1 text-yellow-500 text-xs font-bold">
+                          <Star size={12} fill="currentColor" />
+                          <span>{product.avgRating ? product.avgRating.toFixed(1) : "4.8"}</span>
+                          <span className="text-gray-400 font-normal">({getSalesCount(product.id)} vendidos)</span>
+                        </div>
+                      </div>
+
+                      <div className="text-2xl font-bold text-foreground mb-1">
+                        ${product.price.toLocaleString("es-ES")}
+                      </div>
+                      <h3 className="font-semibold text-lg mb-1 line-clamp-1 group-hover:text-primary transition-colors">{product.title}</h3>
+                      <p className="text-sm text-gray-600 line-clamp-2 leading-snug mb-4">{product.description}</p>
+
+                      <button className="w-full bg-gradient-to-r from-primary to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 rounded-lg font-medium transition-all hover:shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 duration-300">
+                        Ver detalles
                       </button>
                     </div>
                   </div>
-
-                  {/* Product Info */}
-                  <div className="p-5">
-                    <div className="text-2xl font-bold text-foreground mb-2">
-                      ${product.price.toLocaleString("es-ES")}
-                    </div>
-                    <h3 className="font-semibold text-lg mb-1 line-clamp-1">{product.title}</h3>
-                    <p className="text-sm text-gray-600 line-clamp-2 leading-snug">{product.description}</p>
-
-                    <button className="w-full mt-4 bg-gradient-to-r from-primary to-red-600 hover:from-red-600 hover:to-red-700 text-white py-2 rounded-lg font-medium transition-all hover:shadow-lg opacity-0 group-hover:opacity-100 transform translate-y-2 group-hover:translate-y-0 duration-300">
-                      Ver detalles
-                    </button>
-                  </div>
-                </div>
+                </Link>
               </div>
             ))}
           </div>

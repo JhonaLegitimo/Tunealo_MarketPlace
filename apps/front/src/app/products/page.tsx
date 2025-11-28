@@ -19,7 +19,7 @@ interface ExistingCartData {
 }
 
 export default function AddToCartButton({ productId }: { productId: number }) {
-  const [addToCart] = useMutation(ADD_TO_CART, {
+  const [addToCart] = useMutation<{ addToCart: CartItem }>(ADD_TO_CART, {
     update(cache, { data }) {
       const newItem = data?.addToCart;
       if (!newItem) return;

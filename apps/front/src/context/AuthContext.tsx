@@ -14,19 +14,22 @@ interface AuthContextType {
   login: (token: string, user: User) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  loading: boolean;
 }
 
 const AuthContext = createContext<AuthContextType>({
   user: null,
   token: null,
-  login: () => {},
-  logout: () => {},
+  login: () => { },
+  logout: () => { },
   isAuthenticated: false,
+  loading: true,
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
   // 🔁 Restaurar sesión desde localStorage
   useEffect(() => {
@@ -36,6 +39,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
       setToken(storedToken);
       setUser(JSON.parse(storedUser));
     }
+    setLoading(false);
   }, []);
 
   // 🟢 Guardar sesión
@@ -56,7 +60,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, token, login, logout, isAuthenticated: !!token }}
+      value={{ user, token, login, logout, isAuthenticated: !!token, loading }}
     >
       {children}
     </AuthContext.Provider>
