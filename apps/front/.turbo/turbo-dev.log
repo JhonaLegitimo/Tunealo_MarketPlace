@@ -8,6 +8,6 @@
    - Network:       http://192.168.1.66:3000
 
  ✓ Starting...
- ✓ Ready in 795ms
- GET /profile 200 in 2.3s (compile: 2.0s, render: 272ms)
- GET /grid.svg 404 in 686ms (compile: 632ms, render: 54ms)
+ ✓ Ready in 729ms
+ GET /seller/dashboard 200 in 2.2s (compile: 1953ms, render: 255ms)
+ GET /seller/dashboard 200 in 31ms (compile: 3ms, render: 27ms)
