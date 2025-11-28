@@ -42,12 +42,12 @@ export default function SellerDashboard() {
     }, [user, authLoading, router]);
 
     // Queries
-    const { data: productsData, loading: productsLoading, refetch: refetchProducts } = useQuery(GET_MY_PRODUCTS, {
+    const { data: productsData, loading: productsLoading, refetch: refetchProducts } = useQuery<any>(GET_MY_PRODUCTS, {
         variables: { sellerId: user?.id, take: 50 },
         skip: !user,
     });
 
-    const { data: tagsData } = useQuery(GET_TAGS);
+    const { data: tagsData } = useQuery<any>(GET_TAGS);
 
     // Mutations
     const [createProduct, { loading: creating }] = useMutation(CREATE_PRODUCT, {
