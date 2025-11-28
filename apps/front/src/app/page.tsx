@@ -1,13 +1,11 @@
 "use client"
 
-import { Search, Bell, ShoppingCart, X, Heart, Share2, Star } from "lucide-react"
+import { X, Heart, Share2, Star, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { useQuery } from "@apollo/client/react"
 import { GET_PRODUCTS } from "@/graphql/products"
 import Link from "next/link"
-import { useAuth } from "@/context/AuthContext"
-import CartDrawer from "@/components/CartDrawer"
 
 interface ProductImage {
   url: string;
@@ -35,7 +33,6 @@ interface ProductsData {
 
 export default function Home() {
   const { data, loading, error } = useQuery<ProductsData>(GET_PRODUCTS);
-  const { user, token, logout } = useAuth();
 
   const products = data?.products?.products || [];
 
@@ -44,97 +41,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Header */}
-      <header className="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-border">
-        <div className="flex items-center justify-between px-6 py-4">
-          {/* Logo */}
-          <div className="flex items-center gap-2">
-            <div className="relative w-32 h-10">
-              <Image
-                src="/logo.png"
-                alt="Tunealo Logo"
-                fill
-                className="object-contain"
-                priority
-              />
-            </div>
-          </div>
-
-          {/* Search Bar */}
-          <div className="flex-1 max-w-md mx-6">
-            <div className="flex items-center gap-2 bg-gray-100 rounded-full px-4 py-2 transition-all hover:bg-gray-150 focus-within:ring-2 ring-primary/50">
-              <Search size={18} className="text-gray-400" />
-              <input
-                type="text"
-                placeholder="Buscar autopartes, accesorios..."
-                className="bg-transparent outline-none flex-1 text-sm text-gray-600 placeholder-gray-400"
-              />
-            </div>
-          </div>
-
-          {/* Right Actions */}
-          <div className="flex items-center gap-4">
-            <button className="text-gray-600 hover:text-primary transition-colors hover:scale-110 duration-200">
-              <Bell size={20} />
-            </button>
-            <CartDrawer />
-            {token ? (
-              <div className="flex items-center gap-4">
-                <span className="font-medium text-sm hidden sm:block">
-                  Hola, {user?.name || "Usuario"}
-                </span>
-                <Link href="/profile">
-                  <Button
-                    variant="ghost"
-                    className="rounded-full px-4 hover:bg-gray-100 font-medium"
-                  >
-                    Perfil
-                  </Button>
-                </Link>
-                <Button
-                  onClick={logout}
-                  variant="outline"
-                  className="rounded-full px-6 hover:bg-red-50 text-red-600 border-red-200"
-                >
-                  Salir
-                </Button>
-              </div>
-            ) : (
-              <Link href="/login">
-                <Button className="bg-primary hover:bg-primary/90 text-white rounded-full px-6 transition-all hover:shadow-lg">
-                  Ingresar
-                </Button>
-              </Link>
-            )}
-          </div>
-        </div>
-
-        {/* Navigation Categories */}
-        <div className="flex items-center gap-1 px-6 py-3 overflow-x-auto scrollbar-hide">
-          <div className="bg-black text-white px-4 py-1 rounded-full text-sm font-medium whitespace-nowrap hover:bg-gray-800 transition-colors cursor-pointer">
-            Ofertas
-          </div>
-          {[
-            "Motor",
-            "Suspensión",
-            "Frenos",
-            "Rines & Llantas",
-            "Audio",
-            "Interior",
-            "Carrocería",
-            "Iluminación",
-            "Performance",
-          ].map((category) => (
-            <button
-              key={category}
-              className="px-4 py-1 text-sm text-gray-600 hover:text-primary hover:bg-red-50 whitespace-nowrap transition-all rounded-full"
-            >
-              {category}
-            </button>
-          ))}
-        </div>
-      </header>
-
       {/* Main Content */}
       <main className="px-6 py-8">
         {/* Hero Banner */}

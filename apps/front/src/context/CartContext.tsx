@@ -28,6 +28,9 @@ interface CartContextType {
     total: number;
     totalItems: number;
     loading: boolean;
+    isCartOpen: boolean;
+    openCart: () => void;
+    closeCart: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -221,6 +224,11 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
         }
     };
 
+    const [isCartOpen, setIsCartOpen] = useState(false);
+
+    const openCart = () => setIsCartOpen(true);
+    const closeCart = () => setIsCartOpen(false);
+
     return (
         <CartContext.Provider
             value={{
@@ -232,6 +240,9 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
                 total,
                 totalItems,
                 loading: token ? userCartLoading : false,
+                isCartOpen,
+                openCart,
+                closeCart,
             }}
         >
             {children}

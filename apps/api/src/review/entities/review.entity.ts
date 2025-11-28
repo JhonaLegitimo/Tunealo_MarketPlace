@@ -2,7 +2,6 @@ import { ObjectType, Field, Int } from '@nestjs/graphql';
 import { Product } from 'src/product/entities/product.entity';
 import { User } from 'src/user/entities/user.entity';
 
-
 @ObjectType()
 export class Review {
   @Field(() => Int)
@@ -19,6 +18,9 @@ export class Review {
 
   @Field(() => Int)
   authorId: number;
+
+  @Field()
+  isAnonymous: boolean;
 
   @Field()
   createdAt: Date;

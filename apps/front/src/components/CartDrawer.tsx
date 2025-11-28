@@ -12,8 +12,7 @@ import { useMutation } from "@apollo/client/react";
 import { CREATE_ORDER } from "@/graphql/mutations/orderMutations";
 
 export default function CartDrawer() {
-  const [isOpen, setIsOpen] = useState(false);
-  const { cartItems, total, loading, removeFromCart, updateCartItem, clearCart } = useCart();
+  const { cartItems, total, loading, removeFromCart, updateCartItem, clearCart, isCartOpen, openCart, closeCart } = useCart();
   const { token } = useAuth();
   const router = useRouter();
 
@@ -22,7 +21,7 @@ export default function CartDrawer() {
   const handleCheckout = async () => {
     if (!token) {
       alert("⚠️ Debes iniciar sesión para finalizar la compra");
-      setIsOpen(false);
+      closeCart();
       router.push("/login");
       return;
     }
@@ -37,7 +36,7 @@ export default function CartDrawer() {
       });
       alert("✅ ¡Compra realizada con éxito!");
       await clearCart();
-      setIsOpen(false);
+      closeCart();
       router.push("/profile");
     } catch (error) {
       console.error("Error creating order:", error);
@@ -49,7 +48,7 @@ export default function CartDrawer() {
     <>
       {/* Botón del carrito (navbar) */}
       <button
-        onClick={() => setIsOpen(true)}
+        onClick={openCart}
         className="text-gray-600 hover:text-primary transition-colors hover:scale-110 duration-200 relative"
         aria-label="Abrir carrito"
       >
@@ -63,12 +62,12 @@ export default function CartDrawer() {
 
       {/* Drawer lateral animado */}
       <AnimatePresence>
-        {isOpen && (
+        {isCartOpen && (
           <>
             {/* Fondo oscuro */}
             <motion.div
               className="fixed inset-0 bg-black/50 z-40 backdrop-blur-sm"
-              onClick={() => setIsOpen(false)}
+              onClick={closeCart}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
@@ -90,7 +89,7 @@ export default function CartDrawer() {
                   Tu carrito
                 </h2>
                 <button
-                  onClick={() => setIsOpen(false)}
+                  onClick={closeCart}
                   className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
                 >
                   ✖️
@@ -109,7 +108,7 @@ export default function CartDrawer() {
                     <ShoppingCart size={64} className="text-gray-300" />
                     <p className="text-lg font-medium">Tu carrito está vacío</p>
                     <button
-                      onClick={() => setIsOpen(false)}
+                      onClick={closeCart}
                       className="text-primary hover:underline"
                     >
                       Explorar productos

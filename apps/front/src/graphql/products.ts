@@ -40,10 +40,11 @@ export const GET_PRODUCT_DETAILS = gql`
       categories {
         name
       }
-      Reviews {
+      reviews {
         id
         content
         rating
+        isAnonymous
         createdAt
         author {
           name
@@ -84,14 +85,34 @@ export const GET_MY_PRODUCTS = gql`
       products {
         id
         title
+        description
         price
         stock
         published
         images {
           url
         }
+        categories {
+          id
+        }
       }
       totalCount
+    }
+  }
+`;
+
+export const UPDATE_PRODUCT = gql`
+  mutation UpdateProduct($input: UpdateProductInput!) {
+    updateProduct(updateProductInput: $input) {
+      id
+      title
+      slug
+      price
+      stock
+      published
+      seller {
+        name
+      }
     }
   }
 `;

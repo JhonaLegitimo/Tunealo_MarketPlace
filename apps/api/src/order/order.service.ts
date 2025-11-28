@@ -13,7 +13,7 @@ export class OrderService {
   // Commission rate (10% for the platform)
   private readonly COMMISSION_RATE = 0.1;
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * Create order from user's cart
@@ -174,7 +174,7 @@ export class OrderService {
    * Find orders by buyer
    */
   async findByBuyer(userId: number) {
-    return this.prisma.order.findMany({
+    const orders = await this.prisma.order.findMany({
       where: { buyerId: userId },
       include: {
         items: {
@@ -197,6 +197,7 @@ export class OrderService {
         createdAt: 'desc',
       },
     });
+    return orders;
   }
 
   /**
@@ -227,6 +228,7 @@ export class OrderService {
             id: true,
             title: true,
             slug: true,
+            images: true,
           },
         },
       },
@@ -447,6 +449,40 @@ export class OrderService {
           },
         },
       });
+    });
+  }
+  async confirmDelivery(orderId: number, userId: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+    });
+
+    if (!order) {
+      throw new Error('Orden no encontrada');
+    }
+
+    if (order.buyerId !== userId) {
+      throw new Error('No tienes permiso para confirmar esta orden');
+    }
+
+    if (order.status !== OrderStatus.SHIPPED) {
+      throw new Error('Solo se puede confirmar la entrega de órdenes enviadas');
+    }
+
+    return this.prisma.order.update({
+      where: { id: orderId },
+      data: { status: OrderStatus.COMPLETED },
+      include: {
+        items: {
+          include: {
+            product: {
+              include: {
+                images: true
+              }
+            }
+          }
+        },
+        buyer: true,
+      }
     });
   }
 }

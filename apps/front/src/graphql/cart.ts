@@ -16,3 +16,21 @@ export const GET_CART = gql`
     }
   }
 `;
+
+export const ADD_TO_CART = gql`
+  mutation AddToCart($input: AddToCartInput!) {
+    addToCart(addToCartInput: $input) {
+      id
+      items {
+        id
+        quantity
+        product {
+          title
+          price
+        }
+      }
+      totalItems
+      subtotal
+    }
+  }
+`;

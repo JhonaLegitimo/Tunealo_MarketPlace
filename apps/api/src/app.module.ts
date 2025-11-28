@@ -16,6 +16,7 @@ import { ReviewModule } from './review/review.module';
 import { AuthModule } from './auth/auth.module';
 import { CartModule } from './cart/cart.module';
 import { PaymentModule } from './payment/payment.module';
+import { QuestionModule } from './question/question.module';
 
 @Module({
   imports: [
@@ -38,8 +39,10 @@ import { PaymentModule } from './payment/payment.module';
     AuthModule,
     CartModule,
     PaymentModule,
+    QuestionModule,
   ],
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }
+// Trigger rebuild

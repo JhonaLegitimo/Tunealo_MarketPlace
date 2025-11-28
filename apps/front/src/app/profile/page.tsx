@@ -27,6 +27,8 @@ export default function ProfilePage() {
 
     const { data, loading, error } = useQuery<{ myOrders: Order[] }>(GET_MY_ORDERS, {
         skip: !user,
+        fetchPolicy: "network-only",
+        notifyOnNetworkStatusChange: true,
     });
 
     const [updateUserRole, { loading: updatingRole }] = useMutation(
@@ -184,7 +186,7 @@ export default function ProfilePage() {
                                 </div>
                             ) : (
                                 <div className="space-y-4">
-                                    <OrderList orders={data?.myOrders || []} />
+                                    <OrderList key={user?.id} orders={data?.myOrders || []} />
                                 </div>
                             )}
                         </div>
