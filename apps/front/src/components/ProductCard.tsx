@@ -1,11 +1,9 @@
 "use client";
 
-import { gql } from "@apollo/client";
+import { gql } from "@apollo/client/core";
 import { useMutation } from "@apollo/client/react";
-import { ADD_TO_CART } from "@/graphql/mutations/cartMutations";
+import { ADD_TO_CART } from "@/graphql/mutations/cartMutations";  // Asegúrate de tener este archivo con la mutación
 import { useAuth } from "@/context/AuthContext";
-import { useQuery } from "@apollo/client/react";
-import { GET_CART } from "@/graphql/cart"; // Asegúrate de importar correctamente la consulta GET_CART
 
 export default function ProductCard({ product }: { product: any }) {
   const { token } = useAuth();
@@ -13,11 +11,12 @@ export default function ProductCard({ product }: { product: any }) {
 
   const handleAddToCart = async () => {
     try {
+      // Asegúrate de enviar el objeto con el formato adecuado
       await addToCart({
         variables: {
-          addToCartInput: { // Aquí pasamos el objeto esperado por la mutación
-            productId: product.id,
-            quantity: 1,
+          addToCartInput: {  // Aquí estamos pasando el addToCartInput
+            productId: product.id,  // Envia el ID del producto
+            quantity: 1,             // Envia la cantidad del producto, en este caso 1
           },
         },
         context: {
@@ -25,49 +24,8 @@ export default function ProductCard({ product }: { product: any }) {
             Authorization: token ? `Bearer ${token}` : "",
           },
         },
-        update(cache, { data }) {
-          const existingCart = cache.readQuery({
-            query: GET_CART, // Ahora la consulta está definida
-          });
-
-          // Verificar si el carrito existe, si no, inicializar uno vacío
-          if (existingCart && existingCart.cart) {
-            // Asegúrate de que el campo 'id' esté presente en el producto
-            cache.writeQuery({
-              query: GET_CART,
-              data: {
-                cart: {
-                  ...existingCart.cart,
-                  items: [
-                    ...existingCart.cart.items,
-                    {
-                      id: product.id, // Asegúrate de incluir el 'id' aquí
-                      product: product,
-                      quantity: 1,
-                    },
-                  ],
-                },
-              },
-            });
-          } else {
-            // Si no hay carrito, inicializa uno vacío y agrega el producto
-            cache.writeQuery({
-              query: GET_CART,
-              data: {
-                cart: {
-                  items: [
-                    {
-                      id: product.id, // Asegúrate de incluir el 'id' aquí
-                      product: product,
-                      quantity: 1,
-                    },
-                  ],
-                },
-              },
-            });
-          }
-        },
       });
+
       alert(`✅ ${product.title} agregado al carrito`);
     } catch (err) {
       console.error(err);
@@ -94,3 +52,5 @@ export default function ProductCard({ product }: { product: any }) {
     </div>
   );
 }
+
+
