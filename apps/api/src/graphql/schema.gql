@@ -8,6 +8,7 @@ type Review {
   rating: Int!
   productId: Int!
   authorId: Int!
+  isAnonymous: Boolean!
   createdAt: DateTime!
   updatedAt: DateTime!
   product: Product!
@@ -81,6 +82,18 @@ type Tag {
   products: [Product!]
 }
 
+type Question {
+  id: Int!
+  content: String!
+  answer: String
+  productId: Int!
+  product: Product!
+  authorId: Int!
+  author: User!
+  createdAt: DateTime!
+  updatedAt: DateTime!
+}
+
 type Product {
   id: Int!
   title: String!
@@ -98,7 +111,8 @@ type Product {
   categories: [Tag!]
   images: [ProductImage!]!
   OrderItems: [OrderItem!]
-  Reviews: [Review!]
+  reviews: [Review!]
+  questions: [Question!]
 }
 
 type PaginatedProducts {
@@ -187,6 +201,12 @@ type Query {
 
   """Get a single product by slug (public)"""
   productBySlug(slug: String!): Product!
+
+  """Listar todas las reseñas con filtros opcionales (público)"""
+  reviews(productId: Int, userId: Int, rating: Int): [Review!]!
+
+  """Obtener una reseña específica (público)"""
+  review(id: Int!): Review!
   me: User!
   user(id: Int!): User
   users: [User!]!
@@ -211,17 +231,13 @@ type Query {
   order(id: Int!): Order!
   orderitem(id: Int!): OrderItem!
 
-  """Listar todas las reseñas con filtros opcionales (público)"""
-  reviews(productId: Int, userId: Int): [Review!]!
-
-  """Obtener una reseña específica (público)"""
-  review(id: Int!): Review!
-
   """Get current user cart"""
   myCart: Cart!
 
   """Get payment information for an order"""
   paymentByOrder(orderId: Int!): Payment!
+  questionsByProduct(productId: Int!): [Question!]!
+  questionsBySeller(sellerId: Int!): [Question!]!
 }
 
 type Mutation {
@@ -233,6 +249,15 @@ type Mutation {
 
   """Delete a product (owner or ADMIN only)"""
   deleteProduct(id: Int!): Product!
+
+  """Crear una nueva reseña (solo BUYER que haya comprado el producto)"""
+  createReview(createReviewInput: CreateReviewInput!): Review!
+
+  """Actualizar una reseña (solo el autor)"""
+  updateReview(updateReviewInput: UpdateReviewInput!): Review!
+
+  """Eliminar una reseña (autor o ADMIN)"""
+  removeReview(id: Int!): DeleteReviewResponse!
   updateUser(updateUserInput: UpdateUserInput!): User!
   deleteUser(id: Int!): Boolean!
   createProductimage(createProductimageInput: CreateProductimageInput!): ProductImage!
@@ -256,18 +281,12 @@ type Mutation {
 
   """Cancel order (buyer only, PENDING status only)"""
   cancelOrder(orderId: Int!): Order!
+
+  """Confirm order delivery (buyer only, SHIPPED status only)"""
+  confirmOrderDelivery(orderId: Int!): Order!
   createOrderitem(createOrderitemInput: CreateOrderitemInput!): OrderItem!
   updateOrderitem(updateOrderitemInput: UpdateOrderitemInput!): OrderItem!
   removeOrderitem(id: Int!): OrderItem!
-
-  """Crear una nueva reseña (solo BUYER que haya comprado el producto)"""
-  createReview(createReviewInput: CreateReviewInput!): Review!
-
-  """Actualizar una reseña (solo el autor)"""
-  updateReview(updateReviewInput: UpdateReviewInput!): Review!
-
-  """Eliminar una reseña (autor o ADMIN)"""
-  removeReview(id: Int!): DeleteReviewResponse!
   signIn(signInInput: SignInInput!): AuthResponse!
   signUp(createUserInput: CreateUserInput!): AuthResponse!
 
@@ -285,6 +304,10 @@ type Mutation {
 
   """Create payment preference for an order"""
   createPayment(createPaymentInput: CreatePaymentInput!): Payment!
+  createQuestion(createQuestionInput: CreateQuestionInput!): Question!
+  answerQuestion(updateQuestionInput: UpdateQuestionInput!): Question!
+  editQuestion(editQuestionInput: EditQuestionInput!): Question!
+  removeQuestion(id: Int!): Question!
 }
 
 input CreateProductInput {
@@ -331,6 +354,34 @@ input UpdateProductInput {
 
   """Array of image URLs"""
   imageUrls: [String!]
+  id: Int!
+}
+
+input CreateReviewInput {
+  """ID del producto a reseñar"""
+  productId: Int!
+
+  """Contenido de la reseña"""
+  content: String!
+
+  """Calificación del producto (1-5)"""
+  rating: Int!
+
+  """Si la reseña es anónima"""
+  isAnonymous: Boolean
+}
+
+input UpdateReviewInput {
+  """Contenido de la reseña"""
+  content: String
+
+  """Calificación del producto (1-5)"""
+  rating: Int
+
+  """Si la reseña es anónima"""
+  isAnonymous: Boolean
+
+  """ID de la reseña a actualizar"""
   id: Int!
 }
 
@@ -384,28 +435,6 @@ input UpdateOrderitemInput {
   id: Int!
 }
 
-input CreateReviewInput {
-  """ID del producto a reseñar"""
-  productId: Int!
-
-  """Contenido de la reseña"""
-  content: String!
-
-  """Calificación del producto (1-5)"""
-  rating: Int!
-}
-
-input UpdateReviewInput {
-  """Contenido de la reseña"""
-  content: String
-
-  """Calificación del producto (1-5)"""
-  rating: Int
-
-  """ID de la reseña a actualizar"""
-  id: Int!
-}
-
 input SignInInput {
   email: String!
   password: String!
@@ -438,4 +467,19 @@ input UpdateCartItemInput {
 input CreatePaymentInput {
   """Order ID to create payment for"""
   orderId: Int!
+}
+
+input CreateQuestionInput {
+  content: String!
+  productId: Int!
+}
+
+input UpdateQuestionInput {
+  id: Int!
+  answer: String!
+}
+
+input EditQuestionInput {
+  id: Int!
+  content: String!
 }

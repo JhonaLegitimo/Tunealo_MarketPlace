@@ -1,7 +1,9 @@
-import { Resolver, Query, Mutation, Args, Int, Float, Field, ObjectType } from '@nestjs/graphql';
+import { Resolver, Query, Mutation, Args, Int, Float, Field, ObjectType, ResolveField, Parent } from '@nestjs/graphql';
 import { UseGuards } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { Product } from './entities/product.entity';
+import { Review } from '../review/entities/review.entity';
+import { ReviewService } from '../review/review.service';
 import { CreateProductInput } from './dto/create-product.input';
 import { UpdateProductInput } from './dto/update-product.input';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
@@ -30,7 +32,10 @@ class PaginatedProducts {
 @Resolver(() => Product)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ProductResolver {
-  constructor(private readonly productService: ProductService) {}
+  constructor(
+    private readonly productService: ProductService,
+    private readonly reviewService: ReviewService,
+  ) { }
 
   // ==================== MUTATIONS ====================
 
@@ -121,5 +126,12 @@ export class ProductResolver {
   @Public()
   findBySlug(@Args('slug', { type: () => String }) slug: string) {
     return this.productService.findBySlug(slug);
+  }
+
+  @ResolveField(() => [Review], { name: 'reviews', nullable: true })
+  async getReviews(@Parent() product: Product) {
+    const { id } = product;
+    console.log(`ProductResolver.getReviews called for product ${id} (type: ${typeof id})`);
+    return this.reviewService.findAll(id);
   }
 }

@@ -1,5 +1,5 @@
 import { InputType, Int, Field } from '@nestjs/graphql';
-import { IsInt, IsString, Min, Max, MinLength } from 'class-validator';
+import { IsInt, IsString, Min, Max, MinLength, IsOptional, IsBoolean } from 'class-validator';
 
 @InputType()
 export class CreateReviewInput {
@@ -17,4 +17,9 @@ export class CreateReviewInput {
   @Min(1, { message: 'La calificación mínima es 1' })
   @Max(5, { message: 'La calificación máxima es 5' })
   rating: number;
+
+  @Field({ nullable: true, description: 'Si la reseña es anónima' })
+  @IsOptional()
+  @IsBoolean()
+  isAnonymous?: boolean;
 }

@@ -12,7 +12,7 @@ import { Role } from '../common/enum';
 @Resolver(() => Order)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class OrderResolver {
-  constructor(private readonly orderService: OrderService) {}
+  constructor(private readonly orderService: OrderService) { }
 
   // ==================== QUERIES ====================
 
@@ -85,5 +85,14 @@ export class OrderResolver {
     @CurrentUser() user: any,
   ) {
     return this.orderService.cancel(orderId, user.id);
+  }
+  @Mutation(() => Order, {
+    description: 'Confirm order delivery (buyer only, SHIPPED status only)',
+  })
+  confirmOrderDelivery(
+    @Args('orderId', { type: () => Int }) orderId: number,
+    @CurrentUser() user: any,
+  ) {
+    return this.orderService.confirmDelivery(orderId, user.id);
   }
 }

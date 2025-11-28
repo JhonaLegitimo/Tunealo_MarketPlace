@@ -1,0 +1,13 @@
+
+> front@0.1.0 dev
+> next dev --turbopack
+
+[baseline-browser-mapping] The data in this module is over two months old.  To ensure accurate Baseline data, please update: `npm i baseline-browser-mapping@latest -D`
+   ▲ Next.js 16.0.5 (Turbopack)
+   - Local:         http://localhost:3000
+   - Network:       http://192.168.1.66:3000
+
+ ✓ Starting...
+ ✓ Ready in 795ms
+ GET /profile 200 in 2.3s (compile: 2.0s, render: 272ms)
+ GET /grid.svg 404 in 686ms (compile: 632ms, render: 54ms)

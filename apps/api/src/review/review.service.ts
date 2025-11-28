@@ -10,7 +10,7 @@ import { UpdateReviewInput } from './dto/update-review.input';
 
 @Injectable()
 export class ReviewService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(private readonly prisma: PrismaService) { }
 
   /**
    * Crear una nueva reseña
@@ -20,7 +20,8 @@ export class ReviewService {
    * - El usuario no debe tener ya una reseña para ese producto
    */
   async create(userId: number, createReviewInput: CreateReviewInput) {
-    const { productId, content, rating } = createReviewInput;
+    console.log('ReviewService.create called', { userId, createReviewInput });
+    const { productId, content, rating, isAnonymous } = createReviewInput;
 
     // Verificar que el producto existe
     const product = await this.prisma.product.findUnique({
@@ -28,6 +29,7 @@ export class ReviewService {
     });
 
     if (!product) {
+      console.log('Product not found', productId);
       throw new NotFoundException('Producto no encontrado');
     }
 
@@ -42,7 +44,10 @@ export class ReviewService {
       },
     });
 
+    console.log('Has purchased check:', { productId, userId, hasPurchased });
+
     if (!hasPurchased) {
+      console.log('User has not purchased product or order not completed');
       throw new ForbiddenException(
         'Solo puedes reseñar productos que hayas comprado',
       );
@@ -57,6 +62,8 @@ export class ReviewService {
     });
 
     if (existingReview) {
+      console.log('Review already exists for user', userId, 'product', productId);
+      console.log('Existing review object:', JSON.stringify(existingReview, null, 2));
       throw new BadRequestException(
         'Ya has creado una reseña para este producto',
       );
@@ -71,6 +78,7 @@ export class ReviewService {
           rating,
           productId,
           authorId: userId,
+          isAnonymous: isAnonymous || false,
         },
         include: {
           author: {
@@ -97,13 +105,15 @@ export class ReviewService {
       return newReview;
     });
 
+    console.log('Review created successfully', review);
+
     return review;
   }
 
   /**
    * Listar todas las reseñas con filtros opcionales
    */
-  async findAll(productId?: number, userId?: number) {
+  async findAll(productId?: number, userId?: number, rating?: number) {
     const where: any = {};
 
     if (productId) {
@@ -114,7 +124,11 @@ export class ReviewService {
       where.authorId = userId;
     }
 
-    return this.prisma.review.findMany({
+    if (rating) {
+      where.rating = rating;
+    }
+
+    const reviews = await this.prisma.review.findMany({
       where,
       include: {
         author: {
@@ -137,6 +151,8 @@ export class ReviewService {
         createdAt: 'desc',
       },
     });
+    console.log(`ReviewService.findAll for productId ${productId} found ${reviews.length} reviews`);
+    return reviews;
   }
 
   /**
@@ -202,6 +218,7 @@ export class ReviewService {
         data: {
           content: updateReviewInput.content,
           rating: updateReviewInput.rating,
+          isAnonymous: updateReviewInput.isAnonymous,
         },
         include: {
           author: {

@@ -21,18 +21,19 @@ class DeleteReviewResponse {
 @Resolver(() => Review)
 @UseGuards(JwtAuthGuard, RolesGuard)
 export class ReviewResolver {
-  constructor(private readonly reviewService: ReviewService) {}
+  constructor(private readonly reviewService: ReviewService) { }
 
   // ==================== MUTATIONS ====================
 
   @Mutation(() => Review, {
     description: 'Crear una nueva reseña (solo BUYER que haya comprado el producto)',
   })
-  @Roles(Role.BUYER, Role.ADMIN)
+  @Roles(Role.BUYER, Role.ADMIN, Role.SELLER)
   createReview(
     @Args('createReviewInput') createReviewInput: CreateReviewInput,
     @CurrentUser() user: any,
   ) {
+    console.log('ReviewResolver.createReview called', { userId: user.id, input: createReviewInput });
     return this.reviewService.create(user.id, createReviewInput);
   }
 
@@ -71,8 +72,9 @@ export class ReviewResolver {
   findAll(
     @Args('productId', { type: () => Int, nullable: true }) productId?: number,
     @Args('userId', { type: () => Int, nullable: true }) userId?: number,
+    @Args('rating', { type: () => Int, nullable: true }) rating?: number,
   ) {
-    return this.reviewService.findAll(productId, userId);
+    return this.reviewService.findAll(productId, userId, rating);
   }
 
   @Query(() => Review, {
