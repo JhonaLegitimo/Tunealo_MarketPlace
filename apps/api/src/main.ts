@@ -16,9 +16,17 @@ async function bootstrap() {
   );
 
   // CORS configuration
+  const allowedOrigins = [
+    'http://localhost:3000',
+    'https://tunealo-market-place-front.vercel.app',
+    ...(process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(o => o.trim()) : [])
+  ];
+
   app.enableCors({
-    origin: process.env.FRONTEND_URL ? process.env.FRONTEND_URL.split(',').map(origin => origin.trim()) : 'http://localhost:3000',
+    origin: allowedOrigins,
     credentials: true,
+    methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
+    allowedHeaders: 'Content-Type, Accept, Authorization',
   });
 
   // Global validation pipe
